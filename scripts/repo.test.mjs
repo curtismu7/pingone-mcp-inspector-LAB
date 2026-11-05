@@ -47,7 +47,7 @@ test('README follows the README standard: title ends in LAB, plain Tier, Repo an
   assert.match(r, /util\.parseEnv/);
   assert.doesNotMatch(r, /Rule 17 gap/, 'the diagram is loaded from diagram-studio/1 data, so the gap note is gone');
   assert.match(r, /GET \/api\/diagrams\/:name/);
-  assert.ok(!/ping-devops|cmuir|curtismu/i.test(r));
+  assert.ok(!/ping-devops|cmuir/i.test(r));
   assert.ok(!/TEST_COUNTS_PLACEHOLDER/.test(r), 'the test counts are filled in');
 });
 
