@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import ShelfLink from "./components/ShelfLink.jsx";
 import * as api from "./api.js";
 import Banner from "./components/Banner.jsx";
 import Audit from "./pages/Audit.jsx";
@@ -129,6 +130,7 @@ function Shell() {
         <div className="top__bar">
           <h1 className="top__title">PingOne MCP Inspector LAB</h1>
           <div className="top__tools">
+            <ShelfLink />
             <div className="seg" role="group" aria-label="Mode">
               <button type="button" aria-pressed={mode === "mock"} onClick={() => setMode("mock")} data-testid="mode-mock">Mock</button>
               <button type="button" aria-pressed={mode === "live"} onClick={() => setMode("live")} data-testid="mode-live">Live</button>

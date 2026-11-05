@@ -17,6 +17,7 @@ import { hostCheck, isLoopbackHost, sameOriginWrites } from './security.js';
 import { createStore } from './store.js';
 import { validateArgs } from './validate.js';
 import { liveHosts, mcpUrl } from './urls.js';
+import { shelfInfo } from './shelfLink.js';
 
 const RAW_FREE = new Set(['initialize', 'ping', 'tools/list', 'resources/list', 'resources/read', 'resources/templates/list', 'prompts/list', 'prompts/get']);
 const CALLBACK_PATHS = new Set(['/api/oauth/callback', '/callback']);
@@ -244,6 +245,7 @@ export function createApp({ env = process.env, store, mock, fetchImpl = fetch, n
   app.post('/api/connections/:id/logout', h((_req, res, conn) => { auth.logout(conn); res.json({ ok: true }); }, { noNetwork: true }));
 
   app.get('/api/audit', (_req, res) => res.json({ entries: audit.recent() }));
+  app.get('/api/shelf', (_req, res) => { res.set('Cache-Control', 'no-store'); res.json(shelfInfo()); }); // the header "Shelf" button
 
   if (fs.existsSync(webDist)) { app.use(express.static(webDist)); app.get('*', (req, res, next) => (req.path.startsWith('/api/') ? next() : res.sendFile('index.html', { root: webDist }))); }
   app.use((_req, res) => res.status(404).json({ error: 'not_found' }));
