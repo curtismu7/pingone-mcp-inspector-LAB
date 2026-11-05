@@ -3,7 +3,7 @@
 A standalone app that connects to PingOne's hosted MCP server (the admin plane) or any HTTP MCP server, lists its tools with a safety class, and calls them. Read-only by default. Mock by default; Live is owner-run.
 
 Tier: Tester
-Repo: https://github.com/ping-sandbox/pingone-mcp-inspector-LAB
+Repo: https://github.com/curtismu7/pingone-mcp-inspector-LAB
 Catalog: D3
 
 > **Nothing here has been run against a real PingOne tenant.** Everything below was run against in-process stubs only: a mock of PingOne's authorization server and hosted MCP server, and a stub poisoned server. The header has a **Mock / Live** toggle and shows the mode; **Live is refused** until the owner opts in, and the banner on every tab, presenter mode included, names the mode. The owner-run checklist for a real tenant is [docs/live-checks.md](docs/live-checks.md).
@@ -21,7 +21,7 @@ Product source: earlier PingOne MCP work and the `pingone-mcp` skill. Only ideas
 Prerequisites: Node 26 or newer (`.nvmrc` says 26). Docker only for the Docker form.
 
 ```bash
-git clone https://github.com/ping-sandbox/pingone-mcp-inspector-LAB.git
+git clone https://github.com/curtismu7/pingone-mcp-inspector-LAB.git
 cd pingone-mcp-inspector-LAB
 npm ci
 npm run doctor      # node, mode, bind, data directory, port range, netguard self-test, free port
