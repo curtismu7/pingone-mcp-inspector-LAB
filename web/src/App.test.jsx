@@ -98,21 +98,17 @@ test("the toggle decides which connections are shown: the mock demo in Mock, the
 });
 
 test("Live is refused when the server says a guard fails: the page stays in Mock, says why, and nothing is sent", async () => {
-  live(); // even a remembered Live choice does not open Live while it is refused
   const api = fakeApi({ live: LIVE_REFUSED });
   const user = userEvent.setup();
   render(<App />);
   await screen.findByTestId("banner");
   await waitFor(() => expect(api.calls.some((c) => c.url === "/api/info")).toBe(true));
-  await user.click(screen.getByTestId("mode-live"));
-  const note = await screen.findByTestId("refusal");
-  expect(note).toHaveTextContent(/Live is refused \(owner-opt-in\)/);
-  expect(note).toHaveTextContent(/PINGONE_MCP_INSPECTOR_MODE=live/);
-  expect(note).toHaveTextContent(/stays in Mock/);
+  expect(screen.getByTestId("mode-live")).toBeDisabled(); // Real is unavailable: the button is off
+  expect(screen.getByTestId("mode-live").getAttribute("title")).toMatch(/owner-opt-in/); // with the how-to tooltip
+  await user.click(screen.getByTestId("mode-live")); // a disabled button sends nothing
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: mock");
   expect(screen.getByTestId("banner")).toHaveTextContent(/^MOCK mode/);
   expect(api.calls.filter((c) => c.method === "POST" && !/\/test$/.test(c.url))).toEqual([]); // only the mock demo's own test, no Live call
-  await user.click(screen.getByTestId("mode-mock"));
   expect(screen.queryByTestId("refusal")).toBeNull();
 });
 

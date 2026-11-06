@@ -40,20 +40,25 @@ function Shell() {
   const [epoch, setEpoch] = useState(0); // bumped by Reset: remounts the page, so the diagram boxes and form fields start over
   const say = useCallback((m) => setMsg(m), []);
   const liveOk = Boolean(info?.live?.available);
-  // The header toggle. Live is refused unless the server says every guard passes; the page then stays in Mock and says why.
-  const setMode = (m) => {
-    if (m === "live" && !liveOk) {
+  // The header toggle. Rule 19: the mode is server-side (POST /api/mode). Real is disabled with the server's reason
+  // while the Live guards do not pass; a refused switch (409) is shown, and the page stays in Mock.
+  const setMode = async (m) => {
+    const source = m === "live" ? "real" : "mock";
+    if (source === "real" && !liveOk) {
       const why = info?.live?.needs?.length ? info.live.needs.join(" ") : "The server did not say Live is available.";
       setRefusal(`Live is refused${info?.live?.failed?.length ? ` (${info.live.failed.join(", ")})` : ""}. ${why} Nothing was sent; the page stays in Mock.`);
       return;
     }
+    const r = await api.post("/api/mode", { source });
+    if (!r.ok) { setRefusal(r.json?.message || "The mode switch was refused."); return; }
     setRefusal(""); setModeState(m);
   };
 
   useEffect(() => {
     api.get("/api/info").then((r) => {
       const i = r.ok ? r.json : { live: { available: false, failed: ["unreachable"], needs: [] } };
-      setInfo(i); // the page always opens in Mock: Live is entered with the header toggle, never restored
+      setInfo(i);
+      if (r.ok && i.source === "real") setModeState("live"); // the server's mode wins on load
     });
   }, []);
   useEffect(() => { const f = () => setRoute(parseHash()); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
@@ -131,9 +136,11 @@ function Shell() {
           <h1 className="top__title">PingOne MCP Inspector LAB</h1>
           <div className="top__tools">
             <ShelfLink />
-            <div className="seg" role="group" aria-label="Mode">
+            <div className="seg mode-toggle" role="group" aria-label="Mock or real PingOne">
               <button type="button" aria-pressed={mode === "mock"} onClick={() => setMode("mock")} data-testid="mode-mock">Mock</button>
-              <button type="button" aria-pressed={mode === "live"} onClick={() => setMode("live")} data-testid="mode-live">Live</button>
+              <button type="button" aria-pressed={mode === "live"} disabled={!liveOk}
+                title={!liveOk && info?.live?.needs?.length ? `Live is refused (${(info.live.failed ?? []).join(", ")}). ${info.live.needs.join(" ")}` : undefined}
+                onClick={() => setMode("live")} data-testid="mode-live">Real</button>
             </div>
             <span className="chip" data-testid="mode">Mode: {mode}</span>
             <PresentToggle />

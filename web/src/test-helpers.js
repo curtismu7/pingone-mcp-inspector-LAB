@@ -23,13 +23,17 @@ export const LIVE_REFUSED = { available: false, failed: ["owner-opt-in"], needs:
 export function fakeApi({ conns = [conn()], tools = TOOLS, audit = [], handlers = {}, live = LIVE_OK } = {}) {
   const state = { conns: structuredClone(conns), calls: [], audit };
   const json = (status, body) => Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(body) });
+  let serverMode = "mock";
   globalThis.fetch = vi.fn((url, init = {}) => {
     const method = init.method || "GET"; const body = init.body ? JSON.parse(init.body) : undefined;
     state.calls.push({ method, url, body });
     const key = `${method} ${url.replace(/c1|c2/, ":id")}`;
     if (handlers[key]) return handlers[key](body, state, json);
     switch (key) {
-      case "GET /api/info": return json(200, { mode: "mock", modes: ["mock", "live"], live });
+      case "GET /api/info": return json(200, { mode: serverMode, source: serverMode, modes: ["mock", "live"], realAvailable: live.available, realReason: live.available ? null : "refused", live });
+      case "POST /api/mode":
+        if (body.source === "real" && !live.available) return json(409, { error: "real_not_available", message: "Live is refused: owner-opt-in." });
+        serverMode = body.source; return json(200, { source: serverMode, realAvailable: live.available, realReason: null });
       case "POST /api/reset": return json(200, { ok: true, cleared: ["audit"], kept: ["connections"] });
       case "GET /api/connections": return json(200, { connections: state.conns });
       case "POST /api/connections": { const c = conn({ id: "c2", ...body, offline: body.offline === true, clientSecret: body.clientSecret ? "set" : undefined, allowWrites: false, auth_status: {} }); state.conns.push(c); return json(201, c); }

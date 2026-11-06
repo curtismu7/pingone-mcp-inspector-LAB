@@ -86,10 +86,24 @@ export function createApp({ env = process.env, store, mock, fetchImpl = fetch, n
     } catch (err) { fail(res, conn, err); }
   };
 
-  // ---- mode: what the header toggle may do
+  // ---- mode: what the header toggle may do. Rule 19: the server-side Mock/Real mode. The page opens in the
+  // owner's requested mode; POST /api/mode switches for this run. Real is only available when every Live guard passes.
+  let runMode = modeFrom(env); // 'mock' | 'live'
+  const modeView = () => ({
+    source: runMode === 'live' ? 'real' : 'mock',
+    realAvailable: !liveGate,
+    realReason: liveGate ? `Live is refused: ${liveGate.failed.join(', ')}. ${liveGate.needs.join(' ')}` : null,
+  });
+  app.post('/api/mode', (req, res) => {
+    const source = req.body?.source;
+    if (source !== 'mock' && source !== 'real') return res.status(400).json({ error: 'bad_request', message: 'source must be exactly "mock" or "real"' });
+    if (source === 'real' && liveGate) return res.status(409).json({ error: 'real_not_available', message: modeView().realReason });
+    runMode = source === 'real' ? 'live' : 'mock';
+    res.json(modeView());
+  });
   app.get('/api/info', (_req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ mode: 'mock', modes: [...MODES], key: MODE_KEY, requested: modeFrom(env), live: { available: !liveGate, failed: liveGate?.failed ?? [], needs: liveGate?.needs ?? [] } });
+    res.json({ mode: runMode, ...modeView(), modes: [...MODES], key: MODE_KEY, requested: modeFrom(env), live: { available: !liveGate, failed: liveGate?.failed ?? [], needs: liveGate?.needs ?? [] } });
   });
 
   // Reset: run state goes back to the start (audit history, tokens, half-finished sign-ins, writes off, the mock's fake tenant). Saved

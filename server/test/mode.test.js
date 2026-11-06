@@ -133,3 +133,18 @@ test('a connection id is looked up as an own key: __proto__ and constructor are 
     assert.equal(r.status, 404, id); assert.equal(r.json.error, 'not_found');
   }
 });
+
+// Rule 19: the Mock/Real toggle.
+test('POST /api/mode: a refused switch is a 409 with a reason; a bad body is a 400', async () => {
+  const r = await s.call('POST', '/api/mode', { source: 'real' });
+  assert.equal(r.status, 409);
+  assert.equal(r.json.error, 'real_not_available');
+  assert.match(r.json.message, /Live is refused/);
+  const bad = await s.call('POST', '/api/mode', { source: 'live' });
+  assert.equal(bad.status, 400);
+  assert.equal((await s.call('POST', '/api/mode', {})).status, 400);
+  const info = await s.call('GET', '/api/info');
+  assert.equal(info.json.source, 'mock', 'a refused switch changes nothing');
+  assert.equal(info.json.realAvailable, false);
+  assert.match(info.json.realReason, /Live is refused/);
+});
