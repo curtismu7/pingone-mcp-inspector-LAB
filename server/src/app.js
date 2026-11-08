@@ -13,7 +13,7 @@ import { createMcpClient } from './mcpClient.js';
 import { createMock } from './mock.js';
 import { permit } from './netguard.js';
 import { scrub, scrubJson } from './redact.js';
-import { hostCheck, isLoopbackHost, sameOriginWrites } from './security.js';
+import { hostCheck, isLoopbackHost, labAllowedHosts, sameOriginWrites } from './security.js';
 import { createStore } from './store.js';
 import { validateArgs } from './validate.js';
 import { liveHosts, mcpUrl } from './urls.js';
@@ -24,7 +24,7 @@ const CALLBACK_PATHS = new Set(['/api/oauth/callback', '/callback']);
 const isMock = (c) => c.kind === 'pingone' && c.offline === true;
 const HINT_SHORT = 'A short list usually means missing admin roles, not a broken server (from the pingone-mcp skill; this tool has not verified it against a live tenant).';
 
-export function createApp({ env = process.env, store, mock, fetchImpl = fetch, now = Date.now, diagramsDir = DIAGRAM_DIR } = {}) {
+export function createApp({ env = process.env, lab = labAllowedHosts(env), store, mock, fetchImpl = fetch, now = Date.now, diagramsDir = DIAGRAM_DIR } = {}) {
   const diagrams = createDiagrams({ dir: diagramsDir }); // diagram-studio/1 data, validated now: an invalid file stops the app from starting
   const dir = cfgDataDir(env);
   store ||= createStore({ dir });
@@ -71,7 +71,7 @@ export function createApp({ env = process.env, store, mock, fetchImpl = fetch, n
   const app = express();
   app.disable('x-powered-by');
   app.use(hostCheck(env));
-  app.use(sameOriginWrites());
+  app.use(sameOriginWrites(lab));
   app.use(express.json({ limit: '200kb' }));
   app.use('/api/health', health.router);
 

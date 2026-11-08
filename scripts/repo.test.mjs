@@ -127,7 +127,9 @@ test('no shipped text names a real customer, company, tenant or personal path, a
   const hits = [];
   walk(root, (p, name) => {
     if (/(repo|docs|content-pack|shelf-entry)\.test\.mjs$/.test(p) || /\.(png|jpg|ico)$/.test(name)) return;
-    const t = fs.readFileSync(p, 'utf8');
+    // The two lab-proxy names are the one allowed use of "ping-devops": the proxy's public name (the Origin check and its tests name it)
+    // and this app's own Host name (the compose default for LAB_ALLOWED_HOSTS). Anything else with that word is still a hit.
+    const t = fs.readFileSync(p, 'utf8').replace(/(?:pingone-mcp-inspector\.)?local\.ping-devops\.com/gi, 'LAB-HOST');
     for (const w of ['united airlines', 'mileageplus', 'datapower', 'optum', 'unitedhealth', 'uhg', 'personal-agent', 'ping-devops', 'amazonaws.com', '/users/cmuir', 'cmuir_pingcorp']) if (t.toLowerCase().includes(w)) hits.push(`${path.relative(root, p)}: ${w}`);
     if (/\.(md|json)$/.test(name) && retired.test(t)) hits.push(`${path.relative(root, p)}: retired wording`);
   });

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { MODE_KEY, PORT_MAX, PORT_MIN, dataDir, liveRefusal, modeFrom, port, portInRange } from './config.js';
 import { createDiagrams } from './diagrams.js';
-import { bindHost, isLoopbackHost } from './security.js';
+import { bindHost, isLoopbackHost, labAllowedHosts } from './security.js';
 
 export function runChecks({ env = process.env } = {}) {
   const out = [];
@@ -26,6 +26,11 @@ export function runChecks({ env = process.env } = {}) {
 
   const host = bindHost(env);
   add('bind', isLoopbackHost(host) || env.P1MCP_BIND ? 'pass' : 'fail', isLoopbackHost(host) ? 'loopback only' : env.P1MCP_BIND ? 'non-loopback bind opted in via P1MCP_BIND' : 'bind address is not loopback');
+
+  try {
+    const n = labAllowedHosts(env).size;
+    add('lab-hosts', 'pass', n ? `LAB_ALLOWED_HOSTS: ${n} extra Host name(s) (the lab-proxy)` : 'LAB_ALLOWED_HOSTS unset: loopback Host headers only');
+  } catch (e) { add('lab-hosts', 'fail', e.message); }
 
   const p = port(env);
   add('port-range', portInRange(p) ? 'pass' : 'fail', portInRange(p) ? `server port ${p} (within ${PORT_MIN}-${PORT_MAX})` : `server port ${p} is outside ${PORT_MIN}-${PORT_MAX}`);
