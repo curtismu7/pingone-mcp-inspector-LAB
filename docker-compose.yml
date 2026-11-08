@@ -12,7 +12,7 @@ services:
     ports:
       - "127.0.0.1:${HOST_PORT:-5201}:5201"
     environment:
-      SHELF_URL: ${SHELF_URL:-}
+      SHELF_URL: ${SHELF_URL:-http://127.0.0.1:4400}
       PORT: "5201"
       P1MCP_BIND: 0.0.0.0
       P1MCP_CONTAINER: "1"
