@@ -60,6 +60,11 @@ try {
   check((await page.evaluate(() => document.activeElement.textContent)) === 'Skip to content', 'the first Tab stop is the skip link');
   await page.keyboard.press('Enter');
   check(await page.evaluate(() => document.activeElement.id) === 'main', 'the skip link moves focus to the main region');
+  // Rule 19 default: Real if configured, else Mock. This server has the owner's Live opt-in, so the page opens in Live; press Mock.
+  await page.getByTestId('mode').filter({ hasText: 'Mode: live' }).waitFor();
+  check((await page.getByTestId('banner').innerText()).startsWith('LIVE mode'), 'with the Live opt-in the page opens in Live (rule 19 default) and the banner says so');
+  await page.getByRole('button', { name: 'Mock', exact: true }).click();
+  await page.getByTestId('mode').filter({ hasText: 'Mode: mock' }).waitFor();
   check((await page.getByTestId('banner').innerText()).startsWith('MOCK mode, simulated'), 'with no connection the banner says Mock mode');
   check((await page.getByTestId('mode').innerText()) === 'Mode: mock', 'the mode chip says Mode: mock');
 
@@ -178,6 +183,9 @@ try {
   await page.getByRole('link', { name: 'Connections' }).click();
   await page.reload();
   await page.getByTestId('mode-live').click();
+  // The toggle POSTs /api/mode and then reloads the data, so wait for the switch to land before checking it.
+  await page.getByTestId('mode').filter({ hasText: 'Mode: live' }).waitFor({ timeout: 10_000 }).catch(() => {});
+  await page.locator('[data-testid="conn-card"]', { hasText: 'Mock demo' }).first().waitFor({ state: 'detached', timeout: 10_000 }).catch(() => {});
   check((await page.getByTestId('mode').innerText()) === 'Mode: live' && (await page.getByTestId('banner').innerText()).startsWith('LIVE mode'), 'pressing Live (allowed here) shows Mode: live and the LIVE banner');
   check(await page.locator('[data-testid="conn-card"]', { hasText: 'Mock demo' }).count() === 0, 'in Live the mock demo is not listed');
   const useIt = async (card) => { const b = card.getByRole('button', { name: 'Use this connection' }); if (await b.count()) await b.click(); }; // the first connection of a mode is already in use
@@ -191,6 +199,7 @@ try {
   check(await page.locator('[data-testid="scan-result"] img, [data-testid="scan-result"] important').count() === 0, 'poisoned text is shown as inert text');
   await shot('8b-scan-hostile');
   await page.getByTestId('mode-mock').click();
+  await page.getByTestId('mode').filter({ hasText: 'Mode: mock' }).waitFor({ timeout: 10_000 }).catch(() => {});
   check((await page.getByTestId('mode').innerText()) === 'Mode: mock', 'pressing Mock goes back');
   await page.getByRole('link', { name: 'Connections' }).click();
   await useIt(page.locator('[data-testid="conn-card"]', { hasText: /Mock demo|offline/i }).first());
@@ -263,13 +272,13 @@ try {
   await go('connections');
   check(await page.locator('[data-testid="conn-card"]').count() >= 1, 'Reset kept the saved connections');
 
-  // a second server without the Live opt-in: pressing Live is refused with the reason, and the page stays in Mock
+  // a second server without the Live opt-in: the Live (Real) button is disabled with the reason, and the page stays in Mock
   const refusedPage = await ctx.newPage();
   const refusedBase = `http://localhost:${refusedPort}`;
   await refusedPage.goto(`${refusedBase}/#/connections`);
-  await refusedPage.getByTestId('mode-live').click();
-  await refusedPage.getByTestId('refusal').waitFor();
-  check((await refusedPage.getByTestId('refusal').innerText()).includes('owner-opt-in') && (await refusedPage.getByTestId('mode').innerText()) === 'Mode: mock', 'without the opt-in, Live is refused with the reason and the page stays in Mock');
+  await refusedPage.waitForFunction(() => document.querySelector('[data-testid="mode-live"]')?.title?.length > 0);
+  const refusedTitle = (await refusedPage.getByTestId('mode-live').getAttribute('title')) || '';
+  check(await refusedPage.getByTestId('mode-live').isDisabled() && refusedTitle.includes('owner-opt-in') && (await refusedPage.getByTestId('mode').innerText()) === 'Mode: mock', 'without the opt-in, Live is disabled with the reason and the page stays in Mock');
   const refusedInfo = await (await fetch(`${refusedBase}/api/info`)).json();
   const liveTry = await fetch(`${refusedBase}/api/connections`, { method: 'POST', headers: { 'content-type': 'application/json', origin: refusedBase }, body: JSON.stringify({ kind: 'custom', url: 'http://127.0.0.1:9/mcp' }) });
   check(refusedInfo.live.available === false && liveTry.status === 403, 'the API agrees: /api/info says Live is unavailable and a Live connection is refused (403)');
