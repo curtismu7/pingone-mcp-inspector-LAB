@@ -1,4 +1,4 @@
-// Vendored from AI-DEMO-Standalone shared/floating-dialog @ 2ed8465; edit there, not here.
+// Vendored from AI-DEMO-Standalone shared/floating-dialog @ fb9381f; edit there, not here.
 // Drag + resize state for a fixed-position panel. Port of AI-DEMO2's useDraggablePanel (demo_api_ui/src/hooks), with a
 // keyboard path added and the app-zoom step removed. Live pointer dragging is unclamped (a panel may go onto a second
 // monitor); a position restored from storage, or moved with the keyboard, is clamped back into the viewport.
