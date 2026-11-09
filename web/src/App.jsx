@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import ShelfLink from "./components/ShelfLink.jsx";
+// Opened from Customer Agent LAB (UC-LEARN2 routes here): strip + header Back only, nothing preselected.
+import ReturnLink from "./return-link/ReturnLink.jsx";
 import * as api from "./api.js";
 import Banner from "./components/Banner.jsx";
 import Audit from "./pages/Audit.jsx";
@@ -132,9 +134,11 @@ function Shell() {
       <a className="skip" href="#main" onClick={(e) => { e.preventDefault(); document.getElementById("main")?.focus(); }}>Skip to content</a>
       <header className="top">
         <Banner mode={mode} conn={active} />
+        <ReturnLink app="pingone-mcp-inspector" />
         <div className="top__bar">
           <h1 className="top__title">PingOne MCP Inspector LAB</h1>
           <div className="top__tools">
+            <ReturnLink app="pingone-mcp-inspector" variant="header" />
             <ShelfLink />
             <div className="seg mode-toggle" role="group" aria-label="Mock or real PingOne">
               <button type="button" aria-pressed={mode === "mock"} onClick={() => setMode("mock")} data-testid="mode-mock">Mock</button>
