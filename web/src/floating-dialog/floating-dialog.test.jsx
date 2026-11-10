@@ -1,4 +1,3 @@
-// Vendored from AI-DEMO-Standalone shared/floating-dialog @ fb9381f; edit there, not here.
 // FloatingDialog tests (vitest + Testing Library + jsdom). Ported from AI-DEMO2's DraggableModal.test.jsx,
 // DraggableModal.focus.test.jsx and useDraggablePanel.test.js, plus the keyboard, narrow-screen and blocked-popup paths.
 import { useState } from "react";

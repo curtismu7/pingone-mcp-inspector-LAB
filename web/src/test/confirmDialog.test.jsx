@@ -11,19 +11,14 @@ import ConfirmDialog from "../components/ConfirmDialog.jsx";
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe("floating-dialog vendoring", () => {
-  it("each vendored file is one header line naming the pinned commit plus the upstream file, matching floating-dialog.sha256", () => {
+  it("the vendored files are byte for byte the upstream files, matching floating-dialog.sha256, which names the commit", () => {
     const dir = path.join(process.cwd(), "src", "floating-dialog");
     const text = fs.readFileSync(path.join(dir, "floating-dialog.sha256"), "utf8");
-    const commit = text.split("\n")[0].match(/^# vendored from curtismu7\/AI-DEMO-Standalone shared\/floating-dialog at ([0-9a-f]{7,40}) /)?.[1];
-    expect(commit).toBeTruthy();
+    expect(text.split("\n")[0]).toMatch(/^# vendored byte for byte from curtismu7\/AI-DEMO-Standalone shared\/floating-dialog at [0-9a-f]{7,40} \(main\); re-vendor, do not edit\.$/);
     const pins = text.split("\n").filter((l) => l && !l.startsWith("#")).map((l) => l.split(/\s+/));
     expect(pins.map(([, f]) => f).sort()).toEqual(["FloatingDialog.jsx", "floating-dialog.css", "floating-dialog.test.jsx", "geometry.js", "useFloatingPanel.js"]);
-    for (const [h, f] of pins) {
-      const raw = fs.readFileSync(path.join(dir, f), "utf8");
-      const nl = raw.indexOf("\n");
-      expect(raw.slice(0, nl), f).toContain(`Vendored from AI-DEMO-Standalone shared/floating-dialog @ ${commit}; edit there, not here.`);
-      expect(createHash("sha256").update(raw.slice(nl + 1)).digest("hex"), f).toBe(h);
-    }
+    for (const [h, f] of pins) expect(createHash("sha256").update(fs.readFileSync(path.join(dir, f))).digest("hex"), f).toBe(h);
+    expect(fs.readdirSync(dir).sort()).toEqual([...pins.map(([, f]) => f), "floating-dialog.sha256"].sort());
   });
 });
 
