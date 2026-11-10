@@ -1,4 +1,3 @@
-// Vendored from AI-DEMO-Standalone shared/floating-dialog @ fb9381f; edit there, not here.
 // FloatingDialog: the one modal / floating panel for standalone apps (owner 2026-11-09). Port of AI-DEMO2's
 // DraggableModal (demo_api_ui/src/components/DraggableModal.jsx): drag by the title bar, 8-direction resize, pop-out to a
 // real browser window with its own React root (so state stays live in this page), close button + Escape, optional

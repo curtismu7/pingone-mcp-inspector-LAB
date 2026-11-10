@@ -1,4 +1,4 @@
-# vendored from curtismu7/AI-DEMO-Standalone shared/floating-dialog at fb9381f (main); each file has one header line naming that commit, the rest is byte for byte. Hashes are of the upstream files (the vendored file minus its first line). Re-vendor, do not edit.
+# vendored byte for byte from curtismu7/AI-DEMO-Standalone shared/floating-dialog at fb9381f (main); re-vendor, do not edit.
 7f574accc623f04c535a7e82f8df7e71bd78547fa38922542642e7d37e45c62b  FloatingDialog.jsx
 0ed45207b751204a8cd3b9d1cf912a011654eacd819a3f43ee003a64276809c3  floating-dialog.css
 19e01d754ab405da0cd04eaf7bfaf1831497af7cc40c2ea1b069dd0751341820  floating-dialog.test.jsx

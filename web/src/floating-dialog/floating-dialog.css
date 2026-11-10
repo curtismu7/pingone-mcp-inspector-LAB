@@ -1,4 +1,3 @@
-/* Vendored from AI-DEMO-Standalone shared/floating-dialog @ fb9381f; edit there, not here. */
 /* FloatingDialog (shared/floating-dialog). Theme tokens from shared/standalone-ui.css only: no literal colours, so dark
    and light both follow the tokens. Ported from AI-DEMO2's DraggableModal.css and draggablePanel.css, restyled to the
    standalone UI standard. At 600px and below the panel is a full-width bottom sheet and drag / resize are off. */
