@@ -14,6 +14,17 @@ beforeEach(() => { try { localStorage.clear(); } catch { /* none */ } });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/"); });
 
 describe("return link", () => {
+  it("?from=ai-demo-standalone: strip named for AI Demo Standalone, Back to its fixed proxy path", () => {
+    fakeApi();
+    window.history.replaceState(null, "", "/pingone-mcp-inspector/?from=ai-demo-standalone&uc=UC12");
+    render(<App />);
+    const note = screen.getByRole("note", { name: "Opened from AI Demo Standalone" });
+    expect(note.textContent).toContain("UC12");
+    const buttons = screen.getAllByRole("button", { name: /Back to AI Demo Standalone/ });
+    expect(buttons).toHaveLength(2);
+    expect(returnLinkFor("pingone-mcp-inspector").href).toBe("/ai-demo-standalone/?returned=pingone-mcp-inspector&uc=UC12");
+  });
+
   it("the vendored files match return-link.sha256, which names the parent commit", () => {
     const dir = path.join(process.cwd(), "src", "return-link");
     const text = fs.readFileSync(path.join(dir, "return-link.sha256"), "utf8");
