@@ -41,7 +41,7 @@ describe("return link", () => {
     const note = await screen.findByRole("note", NOTE);
     expect(note.textContent).toContain("UC-LEARN2");
     expect(screen.getByTestId("banner").nextElementSibling).toBe(note);
-    expect(document.querySelector(".top__tools > button.return-link--header")).not.toBeNull();
+    expect(document.querySelector(".top__tools button.return-link--header")).not.toBeNull();
     expect(screen.getAllByRole("button", { name: /Back to Customer Agent LAB/ })).toHaveLength(2);
   });
 

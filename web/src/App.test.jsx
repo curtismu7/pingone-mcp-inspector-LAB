@@ -6,7 +6,7 @@ import App from "./App.jsx";
 import { conn, fakeApi, LIVE_REFUSED, TOOLS } from "./test-helpers.js";
 
 beforeEach(() => { window.location.hash = ""; try { localStorage.clear(); } catch { /* none */ } delete document.documentElement.dataset.present; });
-const pressLive = async (user) => { await waitFor(() => expect(screen.getByTestId("mode-live")).toBeEnabled()); await user.click(screen.getByTestId("mode-live")); };
+const pressLive = async (user) => { await waitFor(() => expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(false)); await user.selectOptions(screen.getByTestId("mode-select"), "real"); };
 const live = () => { try { localStorage.setItem("p1mcp.mode", "live"); } catch { /* none */ } };
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 const go = (h) => { window.location.hash = h; window.dispatchEvent(new HashChangeEvent("hashchange")); };
@@ -33,8 +33,8 @@ test("Mock is the default: the banner and the mode chip say Mock, and the banner
   expect(banner).toHaveTextContent(/Writes are off/);
   expect(within(banner).queryByRole("alert")).toBeNull();
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: mock");
-  expect(screen.getByTestId("mode-mock")).toHaveAttribute("aria-pressed", "true");
-  expect(screen.getByTestId("mode-live")).toHaveAttribute("aria-pressed", "false");
+  expect(screen.getByTestId("mode-select")).toHaveValue("mock");
+  expect(screen.getByTestId("mode-select")).toHaveValue("mock");
   expect(banner.querySelector(".banner")).toHaveAttribute("data-state", "mock");
 });
 
@@ -44,20 +44,20 @@ test("the Mock / Live toggle is in the header of every page, and the banner and 
   render(<App />);
   for (const page of ["connections", "tools", "raw", "audit", "mcp-first", "stories", "diagram"]) {
     go(`#/${page}`);
-    expect(await screen.findByTestId("mode-mock")).toBeInTheDocument();
-    expect(screen.getByTestId("mode-live")).toBeInTheDocument();
+    expect(await screen.findByTestId("mode-select")).toBeInTheDocument();
+    expect(screen.getByTestId("mode-select")).toBeInTheDocument();
     expect(screen.getByTestId("mode")).toHaveTextContent("Mode: mock");
     expect(screen.getByTestId("banner")).toHaveTextContent(/^MOCK mode/);
   }
   go("#/connections");
-  await waitFor(() => expect(screen.getByTestId("mode-live")).toBeEnabled());
-  await user.click(screen.getByTestId("mode-live"));
+  await waitFor(() => expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(false));
+  await user.selectOptions(screen.getByTestId("mode-select"), "real");
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: live");
   expect(screen.getByTestId("banner")).toHaveTextContent(/^LIVE mode/);
   expect(screen.getByTestId("banner").querySelector(".banner")).toHaveAttribute("data-state", "live");
   for (const page of ["tools", "raw", "audit", "diagram"]) {
     go(`#/${page}`);
-    await screen.findByTestId("mode-live");
+    await screen.findByTestId("mode-select");
     expect(screen.getByTestId("mode")).toHaveTextContent("Mode: live");
   }
   expect(localStorage.getItem("p1mcp.mode")).toBeNull(); // the mode is never stored
@@ -67,15 +67,15 @@ test("the page always opens in Mock: after pressing Live, a reload is in Mock ag
   fakeApi({ conns: [conn()] });
   const user = userEvent.setup();
   const first = render(<App />);
-  await waitFor(() => expect(screen.getByTestId("mode-live")).toBeEnabled());
-  await user.click(screen.getByTestId("mode-live"));
+  await waitFor(() => expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(false));
+  await user.selectOptions(screen.getByTestId("mode-select"), "real");
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: live");
   first.unmount();
   live(); // what an older build left behind in the browser
   fakeApi({ conns: [conn()] });
   render(<App />);
   await screen.findByTestId("banner");
-  await waitFor(() => expect(screen.getByTestId("mode-live")).toBeEnabled()); // /api/info has answered: Live is allowed
+  await waitFor(() => expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(false)); // /api/info has answered: Live is allowed
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: mock");
   expect(screen.getByTestId("banner")).toHaveTextContent(/^MOCK mode/);
 });
@@ -88,8 +88,8 @@ test("the toggle decides which connections are shown: the mock demo in Mock, the
   expect(screen.queryByText("A real server")).toBeNull();
   expect(screen.getByRole("button", { name: /Add mock demo \(worker/ })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Save connection" })).toBeNull();
-  await waitFor(() => expect(screen.getByTestId("mode-live")).toBeEnabled());
-  await user.click(screen.getByTestId("mode-live"));
+  await waitFor(() => expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(false));
+  await user.selectOptions(screen.getByTestId("mode-select"), "real");
   expect(await screen.findByText("A real server")).toBeInTheDocument();
   expect(screen.queryByText("Mock demo one")).toBeNull();
   expect(screen.queryByRole("button", { name: /Add mock demo \(worker/ })).toBeNull();
@@ -103,9 +103,8 @@ test("Live is refused when the server says a guard fails: the page stays in Mock
   render(<App />);
   await screen.findByTestId("banner");
   await waitFor(() => expect(api.calls.some((c) => c.url === "/api/info")).toBe(true));
-  expect(screen.getByTestId("mode-live")).toBeDisabled(); // Real is unavailable: the button is off
-  expect(screen.getByTestId("mode-live").getAttribute("title")).toMatch(/owner-opt-in/); // with the how-to tooltip
-  await user.click(screen.getByTestId("mode-live")); // a disabled button sends nothing
+  expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').disabled).toBe(true); // Real is unavailable: the option is off
+  expect(screen.getByTestId("mode-select").querySelector('option[value="real"]').getAttribute("title")).toMatch(/owner-opt-in/); // with the how-to tooltip
   expect(screen.getByTestId("mode")).toHaveTextContent("Mode: mock");
   expect(screen.getByTestId("banner")).toHaveTextContent(/^MOCK mode/);
   expect(api.calls.filter((c) => c.method === "POST" && !/\/test$/.test(c.url))).toEqual([]); // only the mock demo's own test, no Live call
@@ -348,14 +347,15 @@ test("diagram: Simulate walks steps with a live caption, Reset restores; speed c
   expect(screen.getByTestId("caption")).toHaveTextContent(/Step 1 of 5/);
   await waitFor(() => expect(screen.getByTestId("caption")).toHaveTextContent(/Step 5 of 5/), { timeout: 4000 });
   expect(screen.getByTestId("caption")).toHaveTextContent(/UNVERIFIED that the hosted server accepts a worker token/);
-  await user.click(screen.getByRole("button", { name: "Reset" }));
+  const diagMain = screen.getByRole("main");
+  await user.click(within(diagMain).getByRole("button", { name: "Reset" }));
   expect(screen.getByTestId("caption")).toHaveTextContent(/Press Simulate/);
   await waitFor(() => expect(screen.getByRole("option", { name: "Interactive admin sign-in (code + PKCE)" })).toBeInTheDocument());
   await user.selectOptions(screen.getByLabelText("Sign-in model"), "interactive");
   await waitFor(() => expect(screen.getByRole("button", { name: "Simulate" })).toBeEnabled());
   await user.click(screen.getByRole("button", { name: "Simulate" }));
   expect(screen.getByTestId("caption")).toHaveTextContent(/Step 1 of 7/);
-  await user.click(screen.getByRole("button", { name: "Present" }));
+  await user.click(screen.getByTestId("presenter"));
   expect(document.documentElement.dataset.present).toBe("1");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(document.documentElement.dataset.present).toBeUndefined();

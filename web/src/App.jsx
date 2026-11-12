@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import fs from "node:fs";
 import ShelfLink from "./components/ShelfLink.jsx";
 // Opened from Customer Agent LAB (UC-LEARN2 routes here): strip + header Back only, nothing preselected.
 import ReturnLink from "./return-link/ReturnLink.jsx";
@@ -13,7 +14,10 @@ import Stories from "./pages/Stories.jsx";
 import Tool from "./pages/Tool.jsx";
 import Tools from "./pages/Tools.jsx";
 import { isMockConn } from "./lib/format.js";
-import { PresentBar, PresentProvider, PresentToggle } from "./present/Present.jsx";
+import { PresentBar, PresentProvider, usePresent } from "./present/Present.jsx";
+import TopMenu, { applyFontSize } from "./top-menu/TopMenu.jsx";
+
+const VERSION = (() => { try { return JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version || null; } catch { return null; } })();
 
 const NAV = [["connections", "Connections"], ["tools", "Tools"], ["raw", "Raw JSON-RPC"], ["audit", "Audit"], ["mcp-first", "MCP first"], ["stories", "Stories"], ["diagram", "Diagram"]];
 const store = {
@@ -27,6 +31,9 @@ export default function App() {
 }
 
 function Shell() {
+  const { present, set: setPresent } = usePresent();
+  const [fontStep, setFontStep] = useState(() => { const f = store.get("p1mcp.font"); return ["S", "M", "L"].includes(f) ? f : "M"; });
+  useEffect(() => { applyFontSize(fontStep); store.set("p1mcp.font", fontStep); }, [fontStep]);
   const [route, setRoute] = useState(parseHash);
   const [conns, setConns] = useState([]);
   const [activeId, setActiveId] = useState(() => store.get("p1mcp.active"));
@@ -45,15 +52,16 @@ function Shell() {
   // The header toggle. Rule 19: the mode is server-side (POST /api/mode). Real is disabled with the server's reason
   // while the Live guards do not pass; a refused switch (409) is shown, and the page stays in Mock.
   const setMode = async (m) => {
-    const source = m === "live" ? "real" : "mock";
+    const target = m === "real" ? "live" : m;
+    const source = target === "live" ? "real" : "mock";
     if (source === "real" && !liveOk) {
       const why = info?.live?.needs?.length ? info.live.needs.join(" ") : "The server did not say Live is available.";
-      setRefusal(`Live is refused${info?.live?.failed?.length ? ` (${info.live.failed.join(", ")})` : ""}. ${why} Nothing was sent; the page stays in Mock.`);
+      setRefusal(`Live is refused${info?.live?.failed?.length ? ` (${info.live.failed.join(", ")}). ${why} Nothing was sent; the page stays in Mock.` : ""} ${why}`.trim());
       return;
     }
     const r = await api.post("/api/mode", { source });
     if (!r.ok) { setRefusal(r.json?.message || "The mode switch was refused."); return; }
-    setRefusal(""); setModeState(m);
+    setRefusal(""); setModeState(target);
   };
 
   useEffect(() => {
@@ -138,20 +146,20 @@ function Shell() {
         <div className="top__bar">
           <h1 className="top__title">PingOne MCP Inspector LAB</h1>
           <div className="top__tools">
-            <ReturnLink app="pingone-mcp-inspector" variant="header" />
-            <ShelfLink />
-            <div className="seg mode-toggle" role="group" aria-label="Mock or real PingOne">
-              <button type="button" aria-pressed={mode === "mock"} onClick={() => setMode("mock")} data-testid="mode-mock">Mock</button>
-              <button type="button" aria-pressed={mode === "live"} disabled={!liveOk}
-                title={!liveOk && info?.live?.needs?.length ? `Live is refused (${(info.live.failed ?? []).join(", ")}). ${info.live.needs.join(" ")}` : undefined}
-                onClick={() => setMode("live")} data-testid="mode-live">Real</button>
-            </div>
-            <span className="chip" data-testid="mode">Mode: {mode}</span>
-            <PresentToggle />
-            <button type="button" onClick={reset} data-testid="reset">Reset session</button>
-            <label className="theme">Theme
-              <select value={theme} onChange={(e) => setTheme(e.target.value)}><option value="system">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select>
-            </label>
+            <TopMenu
+              mode={{ value: mode === "live" ? "real" : "mock", onChange: setMode, realAvailable: info ? liveOk : null, realHint: info?.live?.needs?.length ? `Live is refused (${(info.live.failed ?? []).join(", ")}). ${info.live.needs.join(" ")}` : undefined }}
+              theme={{ value: theme, onChange: setTheme }}
+              fontSize={{ value: fontStep, onChange: setFontStep }}
+              present={{ active: present, onToggle: () => setPresent(!present) }}
+              shelfUrl="https://local.ping-devops.com:8443/"
+              help={{ href: "https://github.com/curtismu7/pingone-mcp-inspector-LAB#readme" }}
+              version={VERSION}
+              onReset={reset}
+            >
+              <ReturnLink app="pingone-mcp-inspector" variant="header" />
+              <ShelfLink />
+              <span className="chip" data-testid="mode">Mode: {mode}</span>
+            </TopMenu>
           </div>
         </div>
         {refusal && <p className="notice" data-state="bad" role="alert" data-testid="refusal">{refusal}</p>}

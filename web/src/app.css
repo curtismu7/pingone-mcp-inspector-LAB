@@ -10,7 +10,8 @@ main { padding: 8px 0 32px; outline: none; }
 .skip:focus { left: 8px; top: 8px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.top__bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 12px 0 8px; }
+.top__bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 12px 0 8px; position: relative; }
+html { font-size: var(--fs, 16px); }
 .top__title { margin: 0; font-size: 22px; }
 .top__tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .top__nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px; }
