@@ -141,36 +141,37 @@ function Shell() {
   return (
     <>
       <a className="skip" href="#main" onClick={(e) => { e.preventDefault(); document.getElementById("main")?.focus(); }}>Skip to content</a>
-      <header className="top">
-        <Banner mode={mode} conn={active} />
-        <ReturnLink app="pingone-mcp-inspector" />
-        <div className="top__bar">
-          <h1 className="top__title">PingOne MCP Inspector LAB</h1>
-          <div className="top__tools">
-            <TopMenu
-              mode={{ value: mode === "live" ? "real" : "mock", onChange: setMode, realAvailable: info ? liveOk : null, realHint: info?.live?.needs?.length ? `Live is refused (${(info.live.failed ?? []).join(", ")}). ${info.live.needs.join(" ")}` : undefined }}
-              theme={{ value: theme, onChange: setTheme }}
-              fontSize={{ value: fontStep, onChange: setFontStep }}
-              present={{ active: present, onToggle: () => setPresent(!present) }}
-              shelfUrl="https://local.ping-devops.com:8443/"
-              help={{ href: "https://github.com/curtismu7/pingone-mcp-inspector-LAB#readme" }}
-              version={VERSION}
-              onReset={reset}
-            >
-              <ReturnLink app="pingone-mcp-inspector" variant="header" />
-              <ShelfLink />
-              <VerifyMark id="pingone-mcp-inspector" />
-              <span className="chip" data-testid="mode">Mode: {mode}</span>
-            </TopMenu>
-          </div>
-        </div>
-        {refusal && <p className="notice" data-state="bad" role="alert" data-testid="refusal">{refusal}</p>}
-        <nav className="top__nav" aria-label="Pages">
-          {NAV.map(([id, label]) => <a key={id} className="top__link" href={`#/${id}`} aria-current={route.page === id || (id === "tools" && route.page === "tool") ? "page" : undefined}>{label}</a>)}
+      <header className="shell-bar">
+        <span className="shell-brand">
+          <span className="shell-logo" aria-hidden="true">PM</span>
+          <span className="shell-name">PingOne MCP Inspector LAB</span>
+          <span className={`shell-badge${mode === "live" ? " shell-badge--real" : ""}`} data-testid="mode">Mode: {mode}</span>
+        </span>
+        <nav className="shell-nav" aria-label="Pages">
+          {NAV.map(([id, label]) => <a key={id} href={`#/${id}`} aria-current={route.page === id || (id === "tools" && route.page === "tool") ? "page" : undefined}>{label}</a>)}
         </nav>
+        <TopMenu
+          mode={{ value: mode === "live" ? "real" : "mock", onChange: setMode, realAvailable: info ? liveOk : null, realHint: info?.live?.needs?.length ? `Live is refused (${(info.live.failed ?? []).join(", ")}). ${info.live.needs.join(" ")}` : undefined }}
+          theme={{ value: theme, onChange: setTheme }}
+          fontSize={{ value: fontStep, onChange: setFontStep }}
+          present={{ active: present, onToggle: () => setPresent(!present) }}
+          shelfUrl="https://local.ping-devops.com:8443/"
+          help={{ href: "https://github.com/curtismu7/pingone-mcp-inspector-LAB#readme" }}
+          version={VERSION}
+          onReset={reset}
+        >
+          <ReturnLink app="pingone-mcp-inspector" variant="header" />
+          <ShelfLink />
+          <VerifyMark id="pingone-mcp-inspector" />
+        </TopMenu>
       </header>
       <PresentBar />
-      <main id="main" tabIndex={-1} key={epoch}>{page}</main>
+      <main id="main" tabIndex={-1} key={epoch}>
+        <Banner mode={mode} conn={active} />
+        <ReturnLink app="pingone-mcp-inspector" />
+        {refusal && <p className="notice" data-state="bad" role="alert" data-testid="refusal">{refusal}</p>}
+        {page}
+      </main>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="live">{msg}</p>
       <footer className="foot">No accounts here: this app runs on your machine and holds your connections. UNVERIFIED claims are marked as such; see docs/references.md and docs/live-checks.md.</footer>
     </>

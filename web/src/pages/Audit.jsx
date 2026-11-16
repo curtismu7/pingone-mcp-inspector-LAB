@@ -12,7 +12,7 @@ export default function Audit() {
     <>
       <h1>Audit</h1>
       <p className="lede">Every call this app was asked to make, allowed or blocked, newest first. Argument values that look like secrets are redacted; tokens and client secrets are never written here. The file is local (mode 600).</p>
-      <button type="button" onClick={load}>Refresh</button>
+      <button type="button" className="primary" onClick={load}>Refresh</button>
       {entries && entries.length === 0 && <p>No calls yet.</p>}
       {entries && entries.length > 0 && (
         <div className="scroll">

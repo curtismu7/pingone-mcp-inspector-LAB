@@ -39,6 +39,7 @@ export default function Tools({ conn, tools, loading, error, test, testBusy, now
             {groups[g].map((t) => (
               <li key={t.name} className="card tool">
                 <div className="row between wrap">
+                  {/* ui-pattern: allow A1 the link's text is the tool name, rendered by <Untrusted> (not visible to the static check); an aria-label would hide its invisible-character chips */}
                   <h3><a href={`#/tool/${encodeURIComponent(t.name)}`}><Untrusted text={t.name} /></a></h3>
                   <span className="row"><ClassBadge t={t} />{t.class !== "read" && writesOff && <span className="badge badge--lock">blocked: writes off</span>}</span>
                 </div>

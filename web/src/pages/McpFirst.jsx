@@ -5,6 +5,7 @@ import React from "react";
 export default function McpFirst() {
   return (
     <>
+      {/* ui-pattern: allow P2 the role="note" UNVERIFIED notice below this h1 is a page note, not the simulation banner; App.jsx renders the Banner first in main */}
       <h1>MCP first, Management API second</h1>
       <p className="notice" data-state="info" role="note">From the <code>pingone-mcp</code> skill. <strong>UNVERIFIED externally:</strong> this app has not checked any of it against a live PingOne tenant (see docs/live-checks.md).</p>
       <section className="card">

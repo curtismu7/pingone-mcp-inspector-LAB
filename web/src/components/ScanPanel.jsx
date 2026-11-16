@@ -16,7 +16,7 @@ export default function ScanPanel({ conn }) {
     <section className="card" aria-labelledby="scan-h" data-testid="scan-panel">
       <h2 id="scan-h">Scan this server's tools</h2>
       <p className="meta">Checks tool names, descriptions and argument defaults for poisoned metadata (hidden instructions, off-box defaults, credential harvesting, look-alike names, invisible characters). It reads the tool list only and reports; it blocks nothing.</p>
-      <button type="button" onClick={run} disabled={state.busy}>{state.busy ? "Scanning…" : "Scan this server's tools"}</button>
+      <button type="button" className="primary" onClick={run} disabled={state.busy}>{state.busy ? "Scanning…" : "Scan this server's tools"}</button>
       {state.err && <p className="err-text" role="alert">{state.err}</p>}
       {res && (
         <div role="status" data-testid="scan-result">
