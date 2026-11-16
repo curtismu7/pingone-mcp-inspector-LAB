@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import fs from "node:fs";
 import ShelfLink from "./components/ShelfLink.jsx";
+import VerifyMark from "./components/VerifyMark.jsx";
 // Opened from Customer Agent LAB (UC-LEARN2 routes here): strip + header Back only, nothing preselected.
 import ReturnLink from "./return-link/ReturnLink.jsx";
 import * as api from "./api.js";
@@ -158,6 +159,7 @@ function Shell() {
             >
               <ReturnLink app="pingone-mcp-inspector" variant="header" />
               <ShelfLink />
+              <VerifyMark id="pingone-mcp-inspector" />
               <span className="chip" data-testid="mode">Mode: {mode}</span>
             </TopMenu>
           </div>
