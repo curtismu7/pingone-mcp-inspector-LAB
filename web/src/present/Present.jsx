@@ -44,6 +44,7 @@ export function PresentBar() {
   return (
     <div className="present-bar" role="toolbar" aria-label="Presenter controls">
       <span>Presenter mode</span>
+      {/* ui-pattern: allow P9 presenter toolbar buttons are presenter chrome, not page actions; MCP first and Stories have no page action to make primary (Stories has only selectors and step disclosures) */}
       <button type="button" onClick={fs} disabled={!document.documentElement.requestFullscreen}>Fullscreen</button>
       <button type="button" onClick={() => set(false)}>Exit (Esc)</button>
     </div>

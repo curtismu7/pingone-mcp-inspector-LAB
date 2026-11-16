@@ -7,10 +7,6 @@ import { Untrusted } from "../lib/Untrusted.jsx";
 const REGIONS = ["com", "eu", "asia", "ca"];
 const EMPTY = { kind: "pingone", label: "", region: "com", envId: "", auth: "worker", endpointStyle: "api", clientId: "", clientSecret: "", tokenAuthMethod: "basic", url: "", authHeader: "Authorization", token: "" };
 
-function Field({ label, children, hint }) {
-  return <label className="field">{label}{children}{hint && <small>{hint}</small>}</label>;
-}
-
 function Wizard({ onCreated, say }) {
   const [f, setF] = useState(EMPTY);
   const [err, setErr] = useState("");
@@ -33,38 +29,41 @@ function Wizard({ onCreated, say }) {
   return (
     <form className="card" onSubmit={submit} aria-labelledby="wiz-h">
       <h2 id="wiz-h">Add a connection</h2>
-      <Field label="Type">
+      <label className="field">Type
         <select value={f.kind} onChange={set("kind")}>
           <option value="pingone">PingOne hosted MCP (your tenant)</option>
           <option value="custom">Custom MCP server (HTTP)</option>
           <option value="raw">Raw (a custom server, driven from the raw console)</option>
         </select>
-      </Field>
-      <Field label="Name (optional)"><input value={f.label} onChange={set("label")} maxLength={80} /></Field>
+      </label>
+      <label className="field">Name (optional)<input value={f.label} onChange={set("label")} maxLength={80} /></label>
       {f.kind === "pingone" ? (
         <>
           <div className="grid2">
-            <Field label="Region" hint="com, eu, asia and ca are from the pingone-mcp skill. Other regions are UNVERIFIED.">
+            <label className="field">Region
               <select value={f.region} onChange={set("region")}>{REGIONS.map((r) => <option key={r}>{r}</option>)}</select>
-            </Field>
-            <Field label="Environment id" hint="Your own PingOne environment (a UUID). Not a secret, never stored in this app's code.">
+              <small>com, eu, asia and ca are from the pingone-mcp skill. Other regions are UNVERIFIED.</small>
+            </label>
+            <label className="field">Environment id
               <input value={f.envId} onChange={set("envId")} required spellCheck="false" autoComplete="off" />
-            </Field>
+              <small>Your own PingOne environment (a UUID). Not a secret, never stored in this app's code.</small>
+            </label>
           </div>
           <fieldset className="seg-fs"><legend>Authentication</legend>
             <p className="hint" data-testid="worker-unverified">UNVERIFIED: sources disagree on whether the hosted PingOne MCP server accepts a worker (client_credentials) token. One source reports a 401 audience mismatch, the pingone-mcp skill says it is supported. If it is rejected, use interactive sign-in. See docs/live-checks.md item 2.</p>
             <label><input type="radio" name="auth" checked={f.auth === "worker"} onChange={() => setF({ ...f, auth: "worker" })} /> Worker application (client_credentials, no human)</label>
             <label><input type="radio" name="auth" checked={f.auth === "interactive"} onChange={() => setF({ ...f, auth: "interactive" })} /> Interactive admin sign-in (authorization code + PKCE)</label>
           </fieldset>
-          <Field label="Client id"><input value={f.clientId} onChange={set("clientId")} required spellCheck="false" autoComplete="off" /></Field>
+          <label className="field">Client id<input value={f.clientId} onChange={set("clientId")} required spellCheck="false" autoComplete="off" /></label>
           {f.auth === "worker" ? (
             <div className="grid2">
-              <Field label="Client secret" hint="Write-only: kept on this machine's server, never shown again.">
+              <label className="field">Client secret
                 <input type="password" value={f.clientSecret} onChange={set("clientSecret")} required autoComplete="new-password" />
-              </Field>
-              <Field label="Token endpoint auth">
+                <small>Write-only: kept on this machine's server, never shown again.</small>
+              </label>
+              <label className="field">Token endpoint auth
                 <select value={f.tokenAuthMethod} onChange={set("tokenAuthMethod")}><option value="basic">Basic (client_secret_basic)</option><option value="post">Form post (client_secret_post)</option></select>
-              </Field>
+              </label>
             </div>
           ) : (
             <div className="redirect" data-testid="redirect-box">
@@ -73,16 +72,17 @@ function Wizard({ onCreated, say }) {
               <p className="hint">Signing in sends your browser to PingOne's authorization server. That is this tool's connection to a third-party server, not a sign-in to this app (it has no accounts). UNVERIFIED: the scopes and consent PingOne shows, and whether it accepts an http://localhost redirect (see docs/live-checks.md).</p>
             </div>
           )}
-          <Field label="MCP endpoint shape" hint="Two shapes appear in our sources and we have not verified which one your tenant answers on.">
+          <label className="field">MCP endpoint shape
             <select value={f.endpointStyle} onChange={set("endpointStyle")}><option value="api">api.pingone.{"{region}"}/v1/environments/{"{envId}"}/mcp (skill)</option><option value="mcp-host">mcp.pingone.{"{region}"}/admin/{"{envId}"}/mcp (AI-DEMO2)</option></select>
-          </Field>
+            <small>Two shapes appear in our sources and we have not verified which one your tenant answers on.</small>
+          </label>
         </>
       ) : (
         <>
-          <Field label="Server URL"><input value={f.url} onChange={set("url")} required placeholder="https://example.invalid/mcp" spellCheck="false" /></Field>
+          <label className="field">Server URL<input value={f.url} onChange={set("url")} required placeholder="https://example.invalid/mcp" spellCheck="false" /></label>
           <div className="grid2">
-            <Field label="Header name"><input value={f.authHeader} onChange={set("authHeader")} /></Field>
-            <Field label="Header value (optional)" hint="Write-only, e.g. Bearer abc. Never shown again."><input type="password" value={f.token} onChange={set("token")} autoComplete="new-password" /></Field>
+            <label className="field">Header name<input value={f.authHeader} onChange={set("authHeader")} /></label>
+            <label className="field">Header value (optional)<input type="password" value={f.token} onChange={set("token")} autoComplete="new-password" /><small>Write-only, e.g. Bearer abc. Never shown again.</small></label>
           </div>
         </>
       )}
@@ -167,9 +167,9 @@ export default function Connections({ mode, conns, activeId, onSelect, reload, t
           <h2 id="presets-h">Working demos</h2>
           <p>One click each. Banking and OpenSearch are local MCP servers on this machine (they must be running). The PingOne worker reads its credentials from a local file outside this repo; the secret is never shown. You can still add your own connections below.</p>
           <div className="row wrap">
-            <button type="button" className="primary" onClick={() => preset("banking", "Banking MCP")}>Add banking MCP</button>
-            <button type="button" className="primary" onClick={() => preset("opensearch", "OpenSearch MCP")}>Add OpenSearch MCP</button>
-            <button type="button" className="primary" onClick={() => preset("pingone", "PingOne standalone worker")}>Add PingOne worker</button>
+            <button type="button" onClick={() => preset("banking", "Banking MCP")}>Add banking MCP</button>
+            <button type="button" onClick={() => preset("opensearch", "OpenSearch MCP")}>Add OpenSearch MCP</button>
+            <button type="button" onClick={() => preset("pingone", "PingOne standalone worker")}>Add PingOne worker</button>
           </div>
         </section>
       )}
