@@ -4,6 +4,9 @@ import "@xyflow/react/dist/style.css";
 import { get } from "../api.js";
 import { usePresent } from "../present/Present.jsx";
 import StoryPanel from "../story/StoryPanel.jsx";
+import { ArrowNoLabel, EdgeLabels, FitOpen, Passport, PassportActions } from "../diagram-kit/DiagramKit.jsx";
+import { boxPassport, slotPoint } from "../diagram-kit/diagramKit.js";
+import "../diagram-kit/diagram-kit.css";
 
 // Browser -> this app -> PingOne token endpoint -> hosted MCP server -> admin API. The picture is diagram-studio/1 DATA (server/diagrams/*.json)
 // fetched by name from /api/diagrams/:name (rule 17): nothing in this file lists a box or an arrow. Boxes drag; Simulate walks one run, Reset
@@ -29,18 +32,22 @@ export function flowEdges(doc, active, animate) {
   const at = Object.fromEntries(doc.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
   return doc.edges.map((e, i) => {
     const id = `e${i}`; const [sh, th] = slots(e, at); const on = active.has(id);
-    return { id, source: e.source, sourceHandle: sh, target: e.target, targetHandle: th, label: e.label, animated: on && animate, className: `${on ? "flow__edge--on" : ""}${e.dashed ? " flow__edge--dashed" : ""}`, markerEnd: { type: MarkerType.ArrowClosed } };
+    return { id, source: e.source, sourceHandle: sh, target: e.target, targetHandle: th, type: "arrow", label: e.label, animated: on && animate, className: `${on ? "flow__edge--on" : ""}${e.dashed ? " flow__edge--dashed" : ""}`, markerEnd: { type: MarkerType.ArrowClosed } };
   });
 }
 
+// The arrow draws the curve only: every label is drawn by EdgeLabels, above the boxes, placed clear of the other labels and the boxes.
+const edgeTypes = { arrow: ArrowNoLabel };
+
 function Box({ data }) {
   return (
-    <div className="fbox" data-state={data.on ? "on" : data.dim ? "dim" : undefined}>
+    <div className={`fbox${data.passport ? " dk-open" : ""}`} data-state={data.on ? "on" : data.dim ? "dim" : undefined}>
       {SIDES.flatMap(([s, pos]) => [1, 2].flatMap((n) => {
         const style = pos === Position.Left || pos === Position.Right ? { top: n === 1 ? "30%" : "70%" } : { left: n === 1 ? "30%" : "70%" };
         return [<Handle key={`${s}${n}t`} id={`${s}${n}`} type="target" position={pos} style={style} />, <Handle key={`${s}${n}s`} id={`${s}${n}`} type="source" position={pos} style={style} />];
       }))}
       <strong>{data.title}</strong>{data.sub.map((line, i) => <span key={i}>{line}</span>)}
+      {data.passport && <Passport p={data.passport} />}
     </div>
   );
 }
@@ -57,6 +64,8 @@ export default function Diagram({ theme = "system" }) {
   const [step, setStep] = useState(-1);
   const [flowKey, setFlowKey] = useState(0);
   const [running, setRunning] = useState(false);
+  // The id of the expanded box, opened by a click or by a shared link's ?box=<id> (an id not in the graph is ignored).
+  const [open, setOpen] = useState(() => { const box = new URLSearchParams(window.location.search).get("box"); return box; });
 
   useEffect(() => {
     let live = true; // a late answer after the page is left is dropped
@@ -89,21 +98,31 @@ export default function Diagram({ theme = "system" }) {
   }, [running, step, steps.length, speed]);
   const ready = !!doc && doc.id === scenario;
   const simulate = () => { setStep(0); setRunning(true); };
-  const reset = () => { setRunning(false); setStep(-1); if (doc) setMoved(starts(doc)); setFlowKey((k) => k + 1); }; // remount: positions AND pan/zoom back to the initial fit
+  const reset = () => { setRunning(false); setStep(-1); setOpen(null); if (doc) setMoved(starts(doc)); setFlowKey((k) => k + 1); }; // remount: positions AND pan/zoom back to the initial fit
   const pick = (s) => { setScenario(s); setRunning(false); setStep(-1); };
   const onNodesChange = useCallback((c) => setMoved((n) => applyNodeChanges(c, n)), []);
   const cur = step >= 0 && steps[step] ? steps[step] : null;
   const curEdges = useMemo(() => new Set((cur?.edges ?? []).map((i) => `e${i}`)), [cur]);
   const curNodes = useMemo(() => new Set((cur?.edges ?? []).flatMap((i) => [doc.edges[i].source, doc.edges[i].target])), [cur, doc]);
+  // The diagram document already is the graph the kit wants: boxes and arrows with their own labels.
+  const graph = useMemo(() => (doc ? { nodes: doc.nodes.map((n) => ({ id: n.id, label: n.label, sub: n.sub ?? [], group: n.group })), edges: doc.edges.map((e) => ({ source: e.source, target: e.target, label: e.label })) } : null), [doc]);
   const nodes = useMemo(() => {
     if (!doc) return [];
     const by = new Map(doc.nodes.map((n) => [n.id, n]));
     return moved.filter((m) => by.has(m.id)).map((m) => {
       const n = by.get(m.id);
-      return { ...m, type: "box", data: { title: n.label, sub: n.sub ?? [], on: curNodes.has(m.id), dim: !!cur && !curNodes.has(m.id) } };
+      return { ...m, type: "box", zIndex: m.id === open ? 10 : undefined, data: { title: n.label, sub: n.sub ?? [], on: curNodes.has(m.id), dim: !!cur && !curNodes.has(m.id), passport: m.id === open ? boxPassport(graph, m.id) : null } };
     });
-  }, [doc, moved, cur, curNodes]);
+  }, [doc, moved, cur, curNodes, open, graph]);
   const edges = useMemo(() => (doc ? flowEdges(doc, curEdges, !reduced()) : []), [doc, curEdges]);
+  const labels = useMemo(() => (doc ? doc.edges.map((e, i) => ({
+    id: `e${i}`, text: e.label, source: e.source, target: e.target, sourceHandle: e.handles?.[0], targetHandle: e.handles?.[1],
+    active: curEdges.has(`e${i}`), dim: !!cur && !curEdges.has(`e${i}`),
+  })) : []), [doc, cur, curEdges]);
+  const actions = useMemo(() => ({
+    open: (id) => setOpen(id), close: () => setOpen(null),
+    link: (id) => { const u = new URL(window.location.href); u.searchParams.set("box", id); return u.toString(); },
+  }), []);
   return (
     <>
       <h1>How a call travels</h1>
@@ -117,9 +136,15 @@ export default function Diagram({ theme = "system" }) {
       {error && <p className="err-text" role="alert">Could not load the diagram ({error}).</p>}
       <div className="flow-wrap" role="group" aria-label="Diagram: your browser, this app, PingOne's token endpoint, the hosted MCP server and the admin API. Boxes can be dragged.">
         {doc && (
-          <ReactFlow key={flowKey} nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodesChange={onNodesChange} colorMode={theme} fitView fitViewOptions={{ padding: 0.12 }} nodesConnectable={false} proOptions={{ hideAttribution: true }} minZoom={0.2}>
-            <Background /><Controls showInteractive={false} />
-          </ReactFlow>
+          <PassportActions.Provider value={actions}>
+            <ReactFlow key={flowKey} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} colorMode={theme}
+              onNodeClick={(_, n) => setOpen((o) => (o === n.id ? null : n.id))} onPaneClick={() => setOpen(null)}
+              fitView fitViewOptions={{ padding: 0.12 }} nodesConnectable={false} proOptions={{ hideAttribution: true }} minZoom={0.2}>
+              <Background /><Controls showInteractive={false} />
+              <EdgeLabels items={labels} pointFor={(box, handle) => slotPoint(box, handle)} fallback={{ w: 180, h: 60 }} />
+              <FitOpen open={open} closePadding={0.12} />
+            </ReactFlow>
+          </PassportActions.Provider>
         )}
       </div>
       <p className="caption" role="status" aria-live="polite" data-testid="caption">{cur ? `Step ${step + 1} of ${steps.length}: ${cur.what}` : "Press Simulate to walk one run through the diagram."}</p>
