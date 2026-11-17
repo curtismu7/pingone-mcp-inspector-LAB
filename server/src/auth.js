@@ -3,7 +3,7 @@
 //  worker:      client_credentials at the token endpoint; Basic or the secret in the body is used ONLY there.
 //  interactive: authorization code + PKCE S256 + state + nonce; iss validated; id_token signature checked against the
 //               AS jwks; single-use state with a short TTL; callback accepted only on the exact registered redirect URI.
-// Token-endpoint shape and the refresh grant follow AI-DEMO2 services/pingoneMcpTokenService.js and
+// Token-endpoint shape and the refresh grant follow the measured PingOne behaviour recorded in docs/references.md and
 // routes/mcpPingOneAdminAuth.js. Scopes ('openid offline_access') are copied from the latter; their effect on a
 // live tenant is UNVERIFIED by us.
 import crypto from 'node:crypto';
