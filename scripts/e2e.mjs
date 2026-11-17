@@ -116,7 +116,7 @@ try {
   await page.locator('a', { hasText: /^listUsers$/ }).click();
   const envVal = await page.getByLabel(/^environmentId/).inputValue();
   check(envVal === '11111111-2222-4333-8444-555555555555', 'environmentId is prefilled from the connection');
-  await page.getByRole('button', { name: 'JSON' }).click();
+  await page.getByRole('button', { name: 'JSON', exact: true }).click();
   await page.getByLabel(/Arguments \(JSON object\)/).fill('{"environment_id":"x","bogus":1}');
   check((await page.getByTestId('warnings').innerText()).includes('snake_case'), 'snake_case parameter warning shown');
   await page.getByLabel(/Arguments \(JSON object\)/).fill('{"environmentId":"11111111-2222-4333-8444-555555555555"}');

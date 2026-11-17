@@ -266,10 +266,17 @@ test("an enabled write opens the confirm dialog with exact arguments and hash, t
   go("#/tool/createUser");
   render(<App />);
   const user = userEvent.setup();
-  await user.type(await screen.findByLabelText(/^username/), "pat");
+  // The username field arrives pre-filled with the suggested value (ease-of-use); the user
+  // replaces it — the confirm dialog must show the FINAL arguments, not the suggestion.
+  const username = await screen.findByLabelText(/^username/);
+  await user.clear(username);
+  await user.type(username, "pat");
   await user.click(screen.getByRole("button", { name: "Call" }));
   const dlg = await screen.findByRole("dialog");
+  // The suggested values (email, populationId) stay unless edited; the confirm dialog shows
+  // exactly what will be sent — the edited username plus the remaining suggestions.
   expect(within(dlg).getByTestId("confirm-args")).toHaveTextContent('"username": "pat"');
+  expect(within(dlg).getByTestId("confirm-args")).toHaveTextContent("sample.user@example.invalid");
   expect(within(dlg).getByTestId("confirm-hash")).toHaveTextContent("abc123hash");
   await user.click(within(dlg).getByRole("button", { name: /Confirm and send/ }));
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());

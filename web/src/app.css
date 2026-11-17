@@ -139,3 +139,8 @@ th, td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom:
   .flow-wrap { height: 22rem; }
   .tools { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Tool page ease-of-use (ideas 1–6): example value chips and the recipe strip. */
+.ex-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.ex-chip { font-size: 12px; font-weight: 400; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; }
+.ex-chip:hover { border-color: var(--accent); color: var(--accent); }

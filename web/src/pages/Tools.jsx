@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import HealthCard from "../components/HealthCard.jsx";
 import ScanPanel from "../components/ScanPanel.jsx";
 import { GROUPS, classWhy, groupTools } from "../lib/format.js";
+import { tryItDefaults } from "../lib/examples.js";
+import ScenarioPicker from "../components/ScenarioPicker.jsx";
 import { Untrusted } from "../lib/Untrusted.jsx";
 import StoryPanel from "../story/StoryPanel.jsx";
 import { usePresent } from "../present/Present.jsx";
@@ -10,7 +12,7 @@ export function ClassBadge({ t }) {
   return <span className={`badge badge--${t.class}`} title={classWhy(t)} data-testid="class-badge">{t.class}</span>;
 }
 
-export default function Tools({ conn, tools, loading, error, test, testBusy, now }) {
+export default function Tools({ conn, tools, loading, error, test, testBusy, now, onScenarioApply, say }) {
   const [q, setQ] = useState("");
   const [cls, setCls] = useState("all");
   const { present } = usePresent();
@@ -23,6 +25,7 @@ export default function Tools({ conn, tools, loading, error, test, testBusy, now
       <h1>Tools</h1>
       <HealthCard conn={conn} test={test} busy={testBusy} now={now} />
       <ScanPanel key={conn.id} conn={conn} />
+      <ScenarioPicker conns={[conn]} onApply={onScenarioApply} say={say} />
       <div className="card controls">
         <label className="field">Search<input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="name or description" /></label>
         <label className="field">Safety class
@@ -45,6 +48,11 @@ export default function Tools({ conn, tools, loading, error, test, testBusy, now
                 </div>
                 <p className="meta"><Untrusted text={t.description || "(no description)"} /></p>
                 <p className="why">Classed <strong>{t.class}</strong> {classWhy(t)}.</p>
+                {/* Idea 5: Try it — deep-link with suggested required arguments pre-filled. The
+                    values come from the curated examples map (web/src/lib/examples.js); the user
+                    sees and edits them on the tool page, and write/destructive calls still go
+                    through the confirm dialog. Tools with no curated defaults keep the plain link. */}
+                {tryItDefaults(t.name) && <p><a href={`#/tool/${encodeURIComponent(t.name)}?try=1`} className="try-it" data-testid={`try-${t.name}`}>Try it with suggested values →</a></p>}
               </li>
             ))}
           </ul>

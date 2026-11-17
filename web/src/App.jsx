@@ -25,7 +25,7 @@ const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* not remembered */ } },
 };
-const parseHash = () => { const [, page = "connections", rest = ""] = window.location.hash.replace(/^#/, "").split("/"); return { page, rest: decodeURIComponent(rest) }; };
+const parseHash = () => { const raw = window.location.hash.replace(/^#/, ""); const [head, query = ""] = raw.split("?"); const [, page = "connections", rest = ""] = head.split("/"); return { page, rest: decodeURIComponent(rest), query: new URLSearchParams(query) }; };
 
 export default function App() {
   return <PresentProvider><Shell /></PresentProvider>;
@@ -98,6 +98,16 @@ function Shell() {
     setTs({ id, tools: r.ok ? r.json.tools : [], loading: false, error: r.ok ? "" : r.status === 401 ? "Sign in first (interactive connection)." : r.json?.message || "Could not list tools." });
   }, []);
 
+  // Idea 1 + 2: the connection/tool switchers on the tool page navigate in place — switching
+  // connection loads its tools first so the tool dropdown is populated for the new connection.
+  const navigateTool = useCallback(async (connId, toolName) => {
+    if (connId && connId !== activeId) {
+      select(connId);
+      if (ts.id !== connId) loadTools(connId);
+    }
+    if (toolName) window.location.hash = `#/tool/${encodeURIComponent(toolName)}`;
+  }, [activeId, select, ts.id, loadTools]);
+
   // First load, and the return from PingOne's authorization server (?login=ok&connection=...).
   useEffect(() => {
     (async () => {
@@ -127,8 +137,8 @@ function Shell() {
 
   const page = (() => {
     switch (route.page) {
-      case "tools": return <Tools conn={active} tools={ts.id === active?.id ? ts.tools : null} loading={ts.loading} error={ts.error} test={active && tests[active.id]} testBusy={testBusy === active?.id} now={now} />;
-      case "tool": return <Tool conn={active} tools={ts.id === active?.id ? ts.tools : null} name={route.rest} />;
+      case "tools": return <Tools conn={active} tools={ts.id === active?.id ? ts.tools : null} loading={ts.loading} error={ts.error} test={active && tests[active.id]} testBusy={testBusy === active?.id} now={now} onScenarioApply={(id) => { select(id); loadTools(id); }} say={say} />;
+      case "tool": return <Tool conn={active} tools={ts.id === active?.id ? ts.tools : null} name={route.rest} onNavigate={navigateTool} allConnections={modeConns.map((c) => ({ id: c.id, label: c.label }))} />;
       case "raw": return <Raw conn={active} />;
       case "audit": return <Audit />;
       case "mcp-first": return <McpFirst />;
