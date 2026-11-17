@@ -1,4 +1,4 @@
-// Stateless MCP JSON-RPC over HTTP. Adapted from mcp-tools server/src/mcp/http.js and AI-DEMO2
+// Stateless MCP JSON-RPC over HTTP. Adapted from mcp-tools server/src/mcp/http.js and
 // services/mcpPingOneHttpAdapter.js (_send, _extractJsonRpc), both same author. Differences: stateless (no initialize
 // handshake; the hosted PingOne server needs none per the pingone-mcp skill), a 401 retry after a token refresh,
 // redirects refused, size and time capped, JSON or SSE replies parsed defensively.

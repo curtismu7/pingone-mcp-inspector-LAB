@@ -10,12 +10,12 @@ Nothing in this repo has talked to a real PingOne tenant. Run these yourself, wi
 
 ## Checks
 
-1. Which MCP endpoint shape answers: `api.pingone.<region>/v1/environments/<envId>/mcp` (skill) or `mcp.pingone.<region>/admin/<envId>/mcp` (AI-DEMO2). Try both via the connection's endpoint style.
-2. Worker auth: does a Worker application's `client_credentials` token work against the hosted MCP at all? AI-DEMO2's adapter header says it was rejected with 401 (audience mismatch, measured 2026-08-30); the skill says Worker auth is supported. They disagree.
-3. Interactive auth: which client id the hosted server accepts (AI-DEMO2 measured only the built-in `pingone-mcp-server`), and whether an app you register with a loopback redirect is refused.
+1. Which MCP endpoint shape answers: `api.pingone.<region>/v1/environments/<envId>/mcp` (skill) or `mcp.pingone.<region>/admin/<envId>/mcp` (hosted MCP). Try both via the connection's endpoint style.
+2. Worker auth: does a Worker application's `client_credentials` token work against the hosted MCP at all? an earlier measurement says it was rejected with 401 (audience mismatch, measured 2026-08-30); the skill says Worker auth is supported. They disagree.
+3. Interactive auth: which client id the hosted server accepts (a past measurement saw only the built-in `pingone-mcp-server` accepted), and whether an app you register with a loopback redirect is refused.
 4. Redirect-URI rules for `http://localhost:<port>/...`: whether PingOne matches the path exactly, whether `127.0.0.1` is accepted, and whether the port must be registered. This tool accepts the callback only on `/api/oauth/callback` or `/callback` of its own port.
-5. Scopes and consent: this tool requests `openid offline_access` (copied from AI-DEMO2); what consent screen appears and what roles the token carries is unverified. It also requires an `id_token` (to check the nonce); if the AS returns none, sign-in fails by design.
-6. Tool count: the skill says about 60-70 tools for a fully privileged Worker (AI-DEMO2 measured 73-78 for an admin user). The "short list" hint triggers under 40.
+5. Scopes and consent: this tool requests `openid offline_access` (the working set from earlier measurements); what consent screen appears and what roles the token carries is unverified. It also requires an `id_token` (to check the nonce); if the AS returns none, sign-in fails by design.
+6. Tool count: the skill says about 60-70 tools for a fully privileged Worker (an earlier measurement saw 73-78 for an admin user). The "short list" hint triggers under 40.
 7. JWKS location `<as>/jwks`, used to verify the id_token signature.
 8. Whether tool annotations (`readOnlyHint`, `destructiveHint`) are present on the real server. If absent, every classification is the name heuristic.
 9. The interactive Sign in button against a real tenant (redirect to PingOne's authorization server and back to `http://localhost:<port>/api/oauth/callback`). The browser round trip was driven only against this repo's stub authorization server.

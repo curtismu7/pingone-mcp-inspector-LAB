@@ -1,7 +1,7 @@
 // In-process mock of the hosted PingOne MCP server AND a PingOne-like authorization server (token, authorize, jwks),
 // on loopback. Used by mock mode and by tests. The tool catalog is an ILLUSTRATIVE SAMPLE, NOT A RECORDING: names
 // and shapes follow the pingone-mcp skill's conventions (camelCase, role-gated list); no real recording was found in
-// AI-DEMO2. Write tools change only the in-memory fake tenant below.
+// Write tools change only the in-memory fake tenant below.
 import crypto from 'node:crypto';
 import http from 'node:http';
 import { pkceChallenge } from './auth.js';

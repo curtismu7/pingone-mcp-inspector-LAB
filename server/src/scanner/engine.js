@@ -1,5 +1,5 @@
 // COPIED from mcp-tools server/src/scanner/engine.js (MIT, same author). Not imported across repos; keep in sync by hand (docs/security.md).
-// The scan engine. Heuristics ported from AI-DEMO2 standalone/mcp-scanner/scanner.mjs (MIT): the patterns for
+// The scan engine. Heuristics ported from the author's mcp-scanner (MIT): the patterns for
 // hidden-instruction, exfil-sink and sensitive-action are the original ones. Added: a rule id and severity per finding,
 // evidence spans (offsets into the original string), unicode checks, credential-harvest and name-shadowing rules, and a
 // size/depth/count budget so hostile input ends in a "scan truncated" finding, not a crash.

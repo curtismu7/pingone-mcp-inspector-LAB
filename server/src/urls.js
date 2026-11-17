@@ -1,8 +1,8 @@
 // Endpoint shapes. Sources:
 //  - MCP endpoint, style "api": https://api.pingone.{region}/v1/environments/{envId}/mcp  (pingone-mcp skill, SKILL.md).
-//  - MCP endpoint, style "mcp-host": https://mcp.pingone.{region}/admin/{envId}/mcp  (AI-DEMO2 services/mcpPingOneHttpAdapter.js _mcpUrl).
+//  - MCP endpoint, style "mcp-host": https://mcp.pingone.{region}/admin/{envId}/mcp  (measured against a live tenant; the hosted admin MCP).
 //    The two sources differ; UNVERIFIED which one a given tenant answers on, so the style is a per-connection choice.
-//  - Authorization server: https://auth.pingone.{region}/{envId}/as/{token|authorize}  (AI-DEMO2 routes/mcpPingOneAdminAuth.js).
+//  - Authorization server: https://auth.pingone.{region}/{envId}/as/{token|authorize}  (PingOne OIDC standard).
 //  - /jwks under the same base is the usual OIDC location: UNVERIFIED for PingOne by us.
 // Verified region suffixes (skill): com, eu, asia, ca. Any other suffix is refused unless the operator opts in
 // (connection field regionOther:true), because the region is spliced into the host that receives the worker secret

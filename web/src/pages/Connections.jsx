@@ -73,7 +73,7 @@ function Wizard({ onCreated, say }) {
             </div>
           )}
           <label className="field">MCP endpoint shape
-            <select value={f.endpointStyle} onChange={set("endpointStyle")}><option value="api">api.pingone.{"{region}"}/v1/environments/{"{envId}"}/mcp (skill)</option><option value="mcp-host">mcp.pingone.{"{region}"}/admin/{"{envId}"}/mcp (AI-DEMO2)</option></select>
+            <select value={f.endpointStyle} onChange={set("endpointStyle")}><option value="api">api.pingone.{"{region}"}/v1/environments/{"{envId}"}/mcp (skill)</option><option value="mcp-host">mcp.pingone.{"{region}"}/admin/{"{envId}"}/mcp (hosted MCP)</option></select>
             <small>Two shapes appear in our sources and we have not verified which one your tenant answers on.</small>
           </label>
         </>
