@@ -9,6 +9,9 @@ name: pingone-mcp-inspector-lab
 services:
   pingone-mcp-inspector-lab:
     build: .
+    # Restart after a Docker daemon restart or host reboot (exit 255, no error) so the lab
+    # comes back by itself; a crash loop still surfaces through the healthcheck.
+    restart: unless-stopped
     ports:
       - "127.0.0.1:${HOST_PORT:-5201}:5201"
     environment:
