@@ -17,6 +17,9 @@ import Tools from "./pages/Tools.jsx";
 import { isMockConn } from "./lib/format.js";
 import { PresentBar, PresentProvider, usePresent } from "./present/Present.jsx";
 import TopMenu, { applyFontSize } from "./top-menu/TopMenu.jsx";
+import TalkTrackDialog from "./talk-track/TalkTrackDialog.jsx";
+import { STORIES, VERTICALS, verticalById } from "./story/stories.js";
+import { fillAll } from "./story/fill.js";
 
 const VERSION = (() => { try { return JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version || null; } catch { return null; } })();
 
@@ -48,6 +51,15 @@ function Shell() {
   const [mode, setModeState] = useState("mock");
   const [refusal, setRefusal] = useState("");
   const [epoch, setEpoch] = useState(0); // bumped by Reset: remounts the page, so the diagram boxes and form fields start over
+  const [talkOpen, setTalkOpen] = useState(false);
+  const talk = STORIES.flatMap((s) => {
+    const vertical = verticalById(store.get("p1mcp.story.vertical") || "generic") || VERTICALS[0];
+    const filled = fillAll(s, vertical);
+    return [
+      { id: `${s.id}-goal`, title: `${s.id}: ${filled.title}`, say: `${filled.goal} Obstacle: ${filled.obstacle}` },
+      ...filled.steps.map((st) => ({ id: `${s.id}-${st.n}`, title: `${s.id}.${st.n} ${st.title}`, say: st.say })),
+    ];
+  });
   const say = useCallback((m) => setMsg(m), []);
   const liveOk = Boolean(info?.live?.available);
   // The header toggle. Rule 19: the mode is server-side (POST /api/mode). Real is disabled with the server's reason
@@ -165,6 +177,7 @@ function Shell() {
           theme={{ value: theme, onChange: setTheme }}
           fontSize={{ value: fontStep, onChange: setFontStep }}
           present={{ active: present, onToggle: () => setPresent(!present) }}
+          talkTrack={{ active: talkOpen, onToggle: () => setTalkOpen((v) => !v) }}
           shelfUrl="https://local.ping-devops.com:8443/"
           help={{ href: "https://github.com/curtismu7/pingone-mcp-inspector-LAB#readme" }}
           version={VERSION}
@@ -183,6 +196,7 @@ function Shell() {
         {page}
       </main>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="live">{msg}</p>
+      <TalkTrackDialog isOpen={talkOpen} onClose={() => setTalkOpen(false)} talk={talk} />
       <footer className="foot">No accounts here: this app runs on your machine and holds your connections. UNVERIFIED claims are marked as such; see docs/references.md and docs/live-checks.md.</footer>
     </>
   );
