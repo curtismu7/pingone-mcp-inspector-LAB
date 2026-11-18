@@ -29,7 +29,7 @@ test('with Live refused: a saved Live connection cannot be created, from the for
     const r = await s.call('POST', '/api/connections', body);
     assert.equal(r.status, 403, r.text); assert.equal(r.json.error, 'live_refused'); assert.deepEqual(r.json.failed, ['owner-opt-in']);
   }
-  for (const id of ['banking', 'opensearch', 'pingone']) assert.equal((await s.call('POST', `/api/presets/${id}`)).status, 403, id);
+  for (const id of ['resource-server', 'opensearch', 'pingone']) assert.equal((await s.call('POST', `/api/presets/${id}`)).status, 403, id);
   for (const id of ['nope', '__proto__', 'constructor', 'toString']) { const r = await s.call('POST', `/api/presets/${id}`); assert.equal(r.status, 404, id); assert.equal(r.json.error, 'unknown_preset', id); }
   assert.equal(s.app.locals.store.list().length, 0);
 });
@@ -147,4 +147,29 @@ test('POST /api/mode: a refused switch is a 409 with a reason; a bad body is a 4
   assert.equal(info.json.source, 'mock', 'a refused switch changes nothing');
   assert.equal(info.json.realAvailable, false);
   assert.match(info.json.realReason, /Live is refused/);
+});
+
+test('the PingOne preset has no built-in environment: with no id in the settings or the worker file it is a 409 that names both places', async () => {
+  const dir = tmpDir(); const file = path.join(dir, 'worker.env');
+  fs.writeFileSync(file, 'PINGONE_CLIENT_ID=worker-1\nPINGONE_CLIENT_SECRET=sentinel-secret-xyz\n', { mode: 0o600 });
+  const t = await startApp({ env: { P1MCP_WORKER_ENV_FILE: file } });
+  try {
+    const r = await t.call('POST', '/api/presets/pingone');
+    assert.equal(r.status, 409, r.text); assert.equal(r.json.error, 'needs_setup');
+    assert.match(r.json.message, /PINGONE_ENV_ID/); assert.match(r.json.message, /PINGONE_ENVIRONMENT_ID/);
+    assert.ok(!r.text.includes('sentinel-secret-xyz'));
+    assert.equal((await t.call('GET', '/api/connections')).json.connections.length, 0, 'nothing stored');
+  } finally { await t.close(); }
+});
+
+test('no AI-DEMO2 address, port or name ships in the server or page source (the vendored floating-dialog port notes and CSS are provenance only)', () => {
+  const root = new URL('../../', import.meta.url).pathname;
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) { if (!['node_modules', 'dist', 'floating-dialog', 'styles'].includes(e.name)) walk(p); } else if (/\.(js|jsx|json)$/.test(e.name) && !/test/.test(e.name)) files.push(p); } };
+  walk(path.join(root, 'server/src')); walk(path.join(root, 'web/src'));
+  for (const f of files) {
+    const txt = fs.readFileSync(f, 'utf8');
+    assert.doesNotMatch(txt, /AI_DEMO2_URL|:(3036|9031|8623|9901)\b/, `${path.relative(root, f)} has an AI-DEMO2 address`);
+    assert.doesNotMatch(txt, /AI-DEMO2/i, `${path.relative(root, f)} names AI-DEMO2`);
+  }
 });

@@ -205,11 +205,11 @@ test('GET /api/health turns needs-setup into ready as soon as a connection exist
   } finally { await h.close(); }
 });
 
-test('presets: banking/opensearch create custom connections; pingone preset needs a local file and never echoes the secret', async () => {
+test('presets: resource-server/opensearch create custom connections; pingone preset needs a local file and never echoes the secret', async () => {
   const dir = tmpDir(); const file = path.join(dir, 'worker.env');
-  const t = await startApp({ env: { P1MCP_WORKER_ENV_FILE: file, P1MCP_BANKING_URL: 'http://127.0.0.1:1/mcp' } });
+  const t = await startApp({ env: { P1MCP_WORKER_ENV_FILE: file, P1MCP_RESOURCE_SERVER_URL: 'http://127.0.0.1:1/mcp' } });
   try {
-    const b = await t.call('POST', '/api/presets/banking');
+    const b = await t.call('POST', '/api/presets/resource-server');
     assert.equal(b.status, 201); assert.equal(b.json.kind, 'custom'); assert.match(b.json.url, /127\.0\.0\.1:1\/mcp/);
     assert.equal((await t.call('POST', '/api/presets/opensearch')).json.url, 'http://localhost:9900/mcp');
     assert.equal((await t.call('POST', '/api/presets/nope')).status, 404);
@@ -226,12 +226,13 @@ test('presets: banking/opensearch create custom connections; pingone preset need
 test('preset defaults: neutral labels, and no port the rulebook reserves for other tools', async () => {
   const t = await startApp({ env: {} });
   try {
-    for (const id of ['banking', 'opensearch']) {
+    for (const id of ['resource-server', 'opensearch']) {
       const r = (await t.call('POST', `/api/presets/${id}`)).json;
       assert.doesNotMatch(r.label, /AI-DEMO/i, id);
       assert.doesNotMatch(r.url, /:(8080|5173|3000|3900|4000|4400|4510|460[01]|18080|19080|19090)\//, `${id} default port`);
     }
-    assert.equal((await t.call('POST', '/api/presets/banking')).json.url, 'http://localhost:9901/mcp');
+    assert.equal((await t.call('POST', '/api/presets/resource-server')).json.url, 'http://localhost:8081/mcp', "mcp-resource-server-LAB's published port");
+    assert.equal((await t.call('POST', '/api/presets/banking')).status, 404, 'the old AI-DEMO2-style banking preset is gone');
   } finally { await t.close(); }
 });
 test('a typed server URL must be https (http only on loopback), carry no credentials and not be a literal private address', async () => {

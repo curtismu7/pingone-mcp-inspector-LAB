@@ -1,6 +1,6 @@
 // Endpoint shapes. Sources:
 //  - MCP endpoint, style "api": https://api.pingone.{region}/v1/environments/{envId}/mcp  (pingone-mcp skill, SKILL.md).
-//  - MCP endpoint, style "mcp-host": https://mcp.pingone.{region}/admin/{envId}/mcp  (measured against a live tenant; the hosted admin MCP).
+//  - MCP endpoint, style "mcp-host": https://mcp.pingone.{region}/admin/{envId}/mcp  (the hosted admin MCP; an earlier owner note says one tenant answered on it, UNVERIFIED by this repo).
 //    The two sources differ; UNVERIFIED which one a given tenant answers on, so the style is a per-connection choice.
 //  - Authorization server: https://auth.pingone.{region}/{envId}/as/{token|authorize}  (PingOne OIDC standard).
 //  - /jwks under the same base is the usual OIDC location: UNVERIFIED for PingOne by us.

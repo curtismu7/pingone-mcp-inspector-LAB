@@ -56,5 +56,5 @@ Anything surprising:
 
 
 
-## Result of item 2 (2026-10-21, one tenant, by the owner's standalone worker)
-A worker (client_credentials) token IS accepted by the hosted MCP server: 82 tools listed. That tenant answered only on the `mcp-host` shape (`https://mcp.pingone.<region>/admin/<env>/mcp`); the `api` shape returned 400 "must be sent to its custom domain". One tenant only: not a general guarantee. The one-click PingOne preset defaults to `mcp-host` (PINGONE_ENDPOINT_STYLE overrides).
+## Earlier reported result for item 2 (UNVERIFIED by this repo)
+An earlier owner-run note (2026-10-21, one tenant, not reproduced in this repo and with no record kept here) reported that a worker (client_credentials) token was accepted by the hosted MCP server and that only the `mcp-host` endpoint shape answered. Treat it as a lead, not a result: this repo has **not been tested against a real tenant**, and which shape answers is item 1 for you to measure. The one-click PingOne preset defaults to `mcp-host` only as a starting choice; set `PINGONE_ENDPOINT_STYLE` in its worker file (`api` or `mcp-host`) to change it. The environment id and region are always yours: from `PINGONE_ENVIRONMENT_ID` / `PINGONE_REGION` in the settings file or `PINGONE_ENV_ID` / `PINGONE_REGION` in the worker file; nothing is built in.

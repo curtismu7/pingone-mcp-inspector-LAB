@@ -134,8 +134,9 @@ export function createApp({ env = process.env, lab = labAllowedHosts(env), store
   });
   // One-click presets. 'pingone' reads the worker from a LOCAL file outside the repo (P1MCP_WORKER_ENV_FILE), never from the repo.
   const PRESETS = {
-    banking: () => ({ kind: 'custom', label: 'Banking MCP (local)', url: env.P1MCP_BANKING_URL || 'http://localhost:9901/mcp' }),
-    opensearch: () => ({ kind: 'custom', label: 'OpenSearch MCP (local)', url: env.P1MCP_OPENSEARCH_URL || 'http://localhost:9900/mcp' }),
+    // Standalone family servers: mcp-resource-server-LAB publishes 127.0.0.1:8081; the OpenSearch MCP is the SE cluster's through a port-forward on 9900.
+    'resource-server': () => ({ kind: 'custom', label: 'MCP resource server (mcp-resource-server-LAB)', url: env.P1MCP_RESOURCE_SERVER_URL || 'http://localhost:8081/mcp' }),
+    opensearch: () => ({ kind: 'custom', label: 'OpenSearch MCP (port-forward)', url: env.P1MCP_OPENSEARCH_URL || 'http://localhost:9900/mcp' }),
     pingone: () => {
       const file = env.P1MCP_WORKER_ENV_FILE || path.join(os.homedir(), '.config', 'pingone-mcp-inspector', 'worker.env');
       let txt; try { txt = fs.readFileSync(file, 'utf8'); } catch { const e = new Error(`Create ${file} with PINGONE_ENV_ID, PINGONE_REGION, PINGONE_CLIENT_ID and PINGONE_CLIENT_SECRET (see .env.example), then try again.`); e.needsSetup = true; throw e; }

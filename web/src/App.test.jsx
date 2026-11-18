@@ -95,7 +95,7 @@ test("the toggle decides which connections are shown: the mock demo in Mock, the
   expect(screen.queryByText("Mock demo one")).toBeNull();
   expect(screen.queryByRole("button", { name: /Add mock demo \(worker/ })).toBeNull();
   expect(screen.getByRole("button", { name: "Save connection" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Add banking MCP" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Add MCP resource server" })).toBeInTheDocument();
 });
 
 test("Live is refused when the server says a guard fails: the page stays in Mock, says why, and nothing is sent", async () => {

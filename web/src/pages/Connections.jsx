@@ -165,9 +165,9 @@ export default function Connections({ mode, conns, activeId, onSelect, reload, t
       {mode === "live" && (
         <section className="card" aria-labelledby="presets-h">
           <h2 id="presets-h">Working demos</h2>
-          <p>One click each. Banking and OpenSearch are local MCP servers on this machine (they must be running). The PingOne worker reads its credentials from a local file outside this repo; the secret is never shown. You can still add your own connections below.</p>
+          <p>One click each. The MCP resource server (mcp-resource-server-LAB) and OpenSearch (a port-forward) are local MCP servers on this machine (they must be running). The PingOne worker needs your own environment id and region, from your settings file or its worker file. The PingOne worker reads its credentials from a local file outside this repo; the secret is never shown. You can still add your own connections below.</p>
           <div className="row wrap">
-            <button type="button" onClick={() => preset("banking", "Banking MCP")}>Add banking MCP</button>
+            <button type="button" onClick={() => preset("resource-server", "MCP resource server")}>Add MCP resource server</button>
             <button type="button" onClick={() => preset("opensearch", "OpenSearch MCP")}>Add OpenSearch MCP</button>
             <button type="button" onClick={() => preset("pingone", "PingOne standalone worker")}>Add PingOne worker</button>
           </div>

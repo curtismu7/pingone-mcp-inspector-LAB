@@ -51,6 +51,8 @@ All standalone apps read one settings file, `~/Development/.env` (mode 600). `ST
 
 No admin or worker credential belongs in this file, and none is read from it. The saved connections (including a worker client secret, which is write-only) live in the app's own owner-only folder (`.data`, or `P1MCP_DATA_DIR`; mode 700, files mode 600). The "Add PingOne worker" preset reads the worker's client id and secret from a separate local file outside the repo (`~/.config/pingone-mcp-inspector/worker.env`, or `P1MCP_WORKER_ENV_FILE`; see `.env.example`). `.env.example` lists every environment variable; the old repo-level `.env` loader is gone. The port is not in the settings file: apps keep their port defaults in code.
 
+**Live presets (nothing is built in).** Three one-click presets, Live only. *MCP resource server* adds `http://localhost:8081/mcp`, the family's `mcp-resource-server-LAB` (`P1MCP_RESOURCE_SERVER_URL` overrides). *OpenSearch MCP* adds `http://localhost:9900/mcp`, a port-forward you start yourself (`P1MCP_OPENSEARCH_URL` overrides). *PingOne worker* needs your own environment id and region (`PINGONE_ENVIRONMENT_ID` and `PINGONE_REGION` above, or `PINGONE_ENV_ID` and `PINGONE_REGION` in the worker file) plus the worker's client id and secret in that file; without them the preset answers 409 with what to set. No AI-DEMO2 service, host or id is used anywhere. Live itself stays disabled with its reason until `PINGONE_MCP_INSPECTOR_MODE=live`, and none of this has been tested against a real PingOne tenant.
+
 ## Ports, and what to do if the port is taken
 
 Ports: pingone-mcp-inspector listens on 5201 (set with PORT, default 5201).
