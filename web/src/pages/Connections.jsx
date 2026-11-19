@@ -28,7 +28,7 @@ function Wizard({ onCreated, say }) {
   }
   return (
     <form className="card" onSubmit={submit} aria-labelledby="wiz-h">
-      <h2 id="wiz-h">Add a connection</h2>
+      <h2 id="wiz-h" data-n="2">Add a connection</h2>
       <label className="field">Type
         <select value={f.kind} onChange={set("kind")}>
           <option value="pingone">PingOne hosted MCP (your tenant)</option>
@@ -153,7 +153,7 @@ export default function Connections({ mode, conns, activeId, onSelect, reload, t
       <p className="lede">A connection says which MCP server to talk to and how to authenticate. Secrets are write-only: after saving they show as <q>set</q>. Writes are off for every new connection. The header toggle decides which connections are shown: Mock shows the mock demo, Live shows real servers.</p>
       {mode === "mock" && (
         <section className="card" aria-labelledby="demo-h">
-          <h2 id="demo-h">Try the mock</h2>
+          <h2 id="demo-h" data-n="1">Try the mock</h2>
           <p>The mock demo talks to an in-process mock of PingOne's hosted MCP server and authorization server on this machine. The tool catalog is an illustrative sample, not a recording, and its write tools change only an in-memory fake tenant.</p>
           <div className="row wrap">
             <button type="button" className="primary" onClick={() => demo("worker")}>Add mock demo (worker, viewer/admin switch)</button>
@@ -164,7 +164,7 @@ export default function Connections({ mode, conns, activeId, onSelect, reload, t
       )}
       {mode === "live" && (
         <section className="card" aria-labelledby="presets-h">
-          <h2 id="presets-h">Working demos</h2>
+          <h2 id="presets-h" data-n="1">Working demos</h2>
           <p>One click each. Banking and OpenSearch are local MCP servers on this machine (they must be running). The PingOne worker reads its credentials from a local file outside this repo; the secret is never shown. You can still add your own connections below.</p>
           <div className="row wrap">
             <button type="button" onClick={() => preset("banking", "Banking MCP")}>Add banking MCP</button>

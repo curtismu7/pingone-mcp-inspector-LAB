@@ -55,6 +55,9 @@ q { font-weight: 700; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin: 12px 0; min-width: 0; }
 .card[data-state="active"] { border: 2px solid var(--accent); }
 .plain { list-style: none; margin: 0; padding: 0; }
+h2[data-n]::before { content: attr(data-n); display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem;
+  border-radius: 999px; background: var(--accent-gradient); color: var(--on-accent); font: 700 0.75rem var(--font-mono);
+  margin-right: 0.5em; vertical-align: 2px; }
 .row { display: flex; align-items: center; gap: 8px; }
 .wrap { flex-wrap: wrap; }
 .between { justify-content: space-between; }
