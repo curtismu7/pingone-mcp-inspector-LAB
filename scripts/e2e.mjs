@@ -123,6 +123,10 @@ try {
   await page.getByRole('button', { name: 'Form' }).click();
   await page.getByRole('button', { name: 'Call', exact: true }).click();
   await page.getByTestId('call-view').waitFor();
+  // The hybrid Form pane renders nested objects as collapsed <details> sections (head shows "object · N fields"),
+  // so sample.user only appears in innerText once the response's result section is opened.
+  await page.getByTestId('call-view').locator('summary', { hasText: /object · 1 field/ }).first().click();
+  await page.getByTestId('call-view').getByText('sample.user').first().waitFor();
   const read = await page.getByTestId('call-view').innerText();
   check(read.includes('sample.user') && read.includes('tools/call') && !read.includes('"method"'), 'read call ran directly; request and response shown as a Form (the default view)');
   await page.getByTestId('call-view').getByRole('button', { name: 'JSON', exact: true }).first().click();
